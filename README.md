@@ -81,8 +81,8 @@ Alur kerja SA sembilan langkah dari materi lab (Study Group Pertama SA) dipetaka
 | 3 | Analysis dan validation | `04_dual-role-transaction-analysis.md` | when yah |
 | 4 | Requirement documentation | `02_requirement-master-list.md`, SRS bab 1 sampai 3 | when yah |
 | 5 | Verifikasi ke stakeholder | sesi review bersama Mentor dan lintas divisi (BE, QA, dll) | when yah |
-| 6 | Modelling | `03_use-case-inventory.md`, `05_erd-draft.md`, activity dan class diagram | when yah |
-| 7 | Handover ke Design dan Dev | `06_api-contract-draft.md`, SDD bab 1 sampai 3 | Setelah modelling stabil |
+| 6 | Modelling | `03_use-case-inventory.md`, `05_erd.md`, activity dan class diagram | when yah |
+| 7 | Handover ke Design dan Dev | `06_api-contract.md`, SDD bab 1 sampai 3 | Setelah modelling stabil |
 | 8 | Monitoring development | log perubahan requirement dan dampaknya | Berjalan |
 | 9 | Support UAT | `07_acceptance-criteria-gherkin.md` | Menjelang UAT |
 
