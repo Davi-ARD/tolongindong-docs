@@ -1,6 +1,6 @@
 # Stakeholder Register dan Glosarium
 
-Status dokumen: `REVIEW` v0.1
+Status dokumen: `CONFIRMED` v0.1
 
 ## 1. Stakeholder pengguna
 
@@ -12,8 +12,6 @@ Ini pihak yang memakai sistem secara langsung dan menjadi aktor di use case.
 | ACT-02 | Helper (penolong) | Menerima pesanan, mengerjakan, menerima bayaran | Pesanan yang layak, bayaran pasti cair, jarak masuk akal | Sudah kerja tetapi tidak dibayar, dibatalkan sepihak setelah jalan, talangan tidak diganti |
 | ACT-03 | Sistem | Pencocokan, penahanan dana, notifikasi, pelepasan dana otomatis | Konsistensi status dan saldo | Kondisi balapan data dan saldo ganda |
 | ACT-04 | Admin operasional | Verifikasi identitas helper, menangani sengketa, menonaktifkan akun | Bukti yang cukup untuk memutuskan | Keputusan sengketa tanpa jejak audit |
-
-Catatan penting: satu orang bisa memegang ACT-01 dan ACT-02 sekaligus, karena pada prototipe awal menunjukkan menu `Become a helper` di halaman `Me` milik client. Konsekuensi desainnya dibahas terpisah di `04_dual-role-transaction-analysis.md`.
 
 ## 2. Stakeholder proyek
 

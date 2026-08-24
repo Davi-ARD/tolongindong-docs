@@ -99,9 +99,10 @@ erDiagram
         bigint id PK
         bigint order_id FK
         bigint helper_id FK
+        bigint proposed_price
         enum offer_status
         timestamp offered_at
-        timestamp expires_at
+        timestamp confirmation_expires_at
         timestamp responded_at
     }
 
@@ -237,7 +238,9 @@ Kolom `idempotency_key` bersifat unik dan menjadi pertahanan utama terhadap tran
 
 Relasi `ORDER` ke `USER` terjadi dua kali, sebagai `client_id` dan sebagai `helper_id`. Perhatikan bahwa `helper_id` di sini menunjuk ke `helper_profile`, bukan langsung ke `user`, supaya tarif dan status ketersediaan pada saat pesanan dibuat bisa ditelusuri. BE perlu memutuskan apakah menyimpan salinan tarif pada baris pesanan, dan saya sarankan menyimpannya karena tarif helper bisa berubah setelah pesanan lama selesai.
 
-Tabel `order_offer` ada supaya penawaran serentak bisa dilacak. Tanpa tabel ini, kita tidak bisa menjawab pertanyaan siapa saja yang ditawari dan siapa yang melewatkan, padahal itu data penting untuk memperbaiki algoritma pencocokan.
+Tabel `order_offer` diperbarui 19 Agustus 2026 mengikuti `DEC-05`, model tawar harga dua arah. Kolom `proposed_price` menyimpan nominal yang diajukan tiap helper, karena setiap helper boleh mengajukan angka berbeda dari harga estimasi client di kolom `order.base_fee`. Nilai `offer_status` yang berlaku sekarang adalah `submitted` saat helper baru mengajukan, `selected` saat client memilihnya dan menunggu konfirmasi, `confirmed` saat helper terpilih sudah mengonfirmasi dan dana ditahan, `not_selected` untuk tawaran lain yang otomatis tertutup, dan `withdrawn` kalau helper menarik tawarannya sendiri sebelum dipilih. Kolom `confirmation_expires_at` dipakai khusus pada status `selected`, menandai batas 60 detik sebelum client harus kembali memilih tawaran lain kalau helper tidak merespons.
+
+Kolom `order.total_amount` yang tadinya dihitung dari `base_fee` ditambah komponen lain sekarang dihitung dari `proposed_price` milik tawaran yang berstatus `confirmed`, bukan dari `base_fee` client lagi. Kolom `base_fee` tetap disimpan sebagai harga estimasi awal untuk keperluan tampilan perbandingan, tapi tidak lagi jadi dasar penahanan dana.
 
 Kolom `is_revealed` pada `rating` melaksanakan aturan penilaian tertutup. Penilaian dibuat lebih dulu tetapi baru terlihat setelah kedua pihak mengisi atau tenggat lewat.
 

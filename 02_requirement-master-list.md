@@ -4,7 +4,7 @@ Status dokumen: `REVIEW` v0.1. Ini satu satunya tempat FR dan NFR hidup. Tabel d
 
 Keterangan kolom sumber: `PROTO` berarti terlihat langsung di prototipe UI, `TURUNAN` berarti konsekuensi logis dari fitur yang terlihat, `ASUMSI` berarti belum ada buktinya dan wajib divalidasi ke tim atau Mentor sebelum naik ke `CONFIRMED`.
 
-Prioritas memakai MoSCoW. Target realistis adalah menyelesaikan seluruh `Must Have` dan sebagian `Should Have`.
+Prioritas memakai MoSCoW. Untuk durasi lab, target realistis adalah menyelesaikan seluruh `Must Have` dan sebagian `Should Have`.
 
 ## 1. Modul AUTH, akun dan autentikasi
 
@@ -60,12 +60,16 @@ Modul ini adalah inti sistem. Detail transisi status ada di `04_dual-role-transa
 
 | Kode | Functional Requirement | Prioritas | Sumber | Status |
 | --- | --- | --- | --- | --- |
-| FR-ORD-001 | Sistem harus menyediakan form pembuatan pesanan berisi kategori, deskripsi tugas, alamat penjemputan, alamat tujuan, dan waktu pelaksanaan | Must | TURUNAN | DRAFT |
-| FR-ORD-002 | Sistem harus menghitung estimasi biaya sebelum pesanan dikirim, terdiri atas tarif dasar, biaya jarak, biaya layanan, dan potongan voucher | Must | TURUNAN | DRAFT |
-| FR-ORD-003 | Sistem harus mendukung dua cara pemesanan yaitu pemesanan langsung ke helper terpilih dan penawaran serentak ke banyak helper | Must | TURUNAN | DRAFT |
-| FR-ORD-004 | Sistem harus menghanguskan tawaran pesanan yang tidak direspons helper dalam 60 detik dan meneruskannya ke helper berikutnya | Must | ASUMSI | DRAFT |
-| FR-ORD-005 | Sistem harus membatalkan pesanan secara otomatis jika tidak ada helper yang menerima dalam 300 detik dan mengembalikan dana tertahan secara penuh | Must | ASUMSI | DRAFT |
-| FR-ORD-006 | Sistem harus menampilkan kepada helper nominal bersih yang akan diterima sebelum helper menekan tombol terima | Must | TURUNAN | DRAFT |
+| FR-ORD-001 | Sistem harus menyediakan form pembuatan pesanan berisi kategori, deskripsi tugas, alamat penjemputan, alamat tujuan, waktu pelaksanaan, dan harga estimasi yang diajukan client | Must | TURUNAN | DRAFT |
+| FR-ORD-002 | Sistem harus menghitung rentang biaya acuan sebelum pesanan dikirim, terdiri atas tarif dasar, biaya jarak, biaya layanan, dan potongan voucher, sebagai panduan bagi client menentukan harga estimasi dan bagi helper menyusun tawaran | Must | TURUNAN | DRAFT |
+| FR-ORD-003 | Sistem harus menyiarkan pesanan ke helper yang memenuhi syarat kategori dan radius, dan mengizinkan setiap helper yang berminat mengajukan tawaran harga masing masing berbeda dari harga estimasi client | Must | TURUNAN, DIREVISI 19 Agu 2026 (DEC-05) | DRAFT |
+| FR-ORD-003B | Sistem harus menampilkan seluruh tawaran harga yang masuk kepada client, masing masing beserta profil helper, rating, dan nominal yang diajukan, agar client dapat membandingkan sebelum memilih | Must | TURUNAN, BARU (DEC-05) | DRAFT |
+| FR-ORD-003C | Sistem harus mengizinkan client memilih satu tawaran dari daftar yang masuk, dan pilihan ini yang memicu penahanan dana serta penolakan otomatis terhadap tawaran lain | Must | TURUNAN, BARU (DEC-05) | DRAFT |
+| FR-ORD-003D | Sistem harus mendukung jalur pemesanan langsung ke satu helper tertentu tanpa melalui tahap tawaran, ketika client memilih helper langsung dari halaman cari helper | Should | TURUNAN | DRAFT |
+| FR-ORD-004 | Sistem harus menutup jendela penawaran 300 detik setelah pesanan disiarkan, dan mengizinkan client memilih dari tawaran yang sudah masuk meskipun jendela belum ditutup penuh jika sudah ada minimal satu tawaran | Must | ASUMSI, DIREVISI 19 Agu 2026 (DEC-05) | DRAFT |
+| FR-ORD-005 | Sistem harus membatalkan pesanan secara otomatis jika tidak ada satu pun tawaran masuk sampai jendela penawaran berakhir, dan mengembalikan dana tertahan secara penuh jika ada | Must | ASUMSI | DRAFT |
+| FR-ORD-006 | Sistem harus menampilkan kepada helper nominal bersih yang akan diterima berdasarkan harga yang mereka ajukan sendiri, dihitung sebelum tawaran dikirim | Must | TURUNAN, DIREVISI 19 Agu 2026 (DEC-05) | DRAFT |
+| FR-ORD-006B | Sistem harus meminta konfirmasi ulang dari helper terpilih dalam 60 detik setelah client memilih tawarannya, sebelum dana benar benar ditahan, untuk mengantisipasi helper yang sudah tidak tersedia lagi | Must | TURUNAN, BARU (DEC-05) | DRAFT |
 | FR-ORD-007 | Sistem harus menampilkan status pesanan berjalan pada beranda client dalam bentuk kartu ringkas berisi nama helper, aktivitas, estimasi waktu, dan nomor pesanan | Must | PROTO | DRAFT |
 | FR-ORD-008 | Sistem harus menampilkan halaman pelacakan berisi peta, posisi helper, estimasi waktu tiba, tahapan progres, identitas helper, nomor pesanan, dan total biaya | Must | PROTO | DRAFT |
 | FR-ORD-009 | Sistem harus menampilkan tahapan progres pesanan minimal empat tahap yaitu diterima, menuju lokasi, sedang dikerjakan, dan selesai | Must | PROTO | DRAFT |
@@ -80,6 +84,10 @@ Modul ini adalah inti sistem. Detail transisi status ada di `04_dual-role-transa
 | FR-ORD-018 | Sistem harus menyediakan kanal sengketa bagi client dan helper dalam 24 jam setelah pesanan ditandai selesai | Should | TURUNAN | DRAFT |
 
 ## 6. Modul WLT, dompet dan pembayaran
+
+Catatan lingkup, hasil keputusan tim 19 Agustus 2026, `DEC-04`. Seluruh transaksi pada modul ini berjalan sebagai saldo simulasi, tidak ada uang sungguhan yang berpindah. Integrasi payment gateway sungguhan seperti Midtrans atau Xendit dicatat sebagai arah pengembangan lanjutan, tidak masuk lingkup pengerjaan lab saat ini, dan disebutkan eksplisit di bagian batasan SRS supaya tidak jadi ekspektasi keliru saat presentasi.
+
+Catatan komisi, `DEC-08`, masih berstatus usulan menunggu persetujuan tim. Rekomendasi SA adalah komisi platform sebesar 10 persen, dipotong dari nominal yang diterima helper, bukan ditambahkan ke tagihan client. Penjelasan lengkap alasan angka ini ada di `10_dokumentasi-keputusan-minggu-1.md`.
 
 | Kode | Functional Requirement | Prioritas | Sumber | Status |
 | --- | --- | --- | --- | --- |

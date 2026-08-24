@@ -73,37 +73,53 @@ Fitur: Membuat pesanan
 ```
 
 ```gherkin
-Fitur: Penahanan dana saat helper menerima
-  Skenario: Dana berpindah dari saldo tersedia ke saldo tertahan
-    # FR-WLT-002
-    Diberikan saldo tersedia client adalah Rp 200.000 dan saldo tertahan Rp 0
-    Dan ada pesanan senilai Rp 105.000 berstatus searching
-    Ketika helper menerima pesanan tersebut
-    Maka saldo tersedia client menjadi Rp 95.000
-    Dan saldo tertahan client menjadi Rp 105.000
-    Dan jumlah keduanya tetap Rp 200.000
-    Dan tercipta satu baris mutasi bertipe hold
+Fitur: Tawar harga dan pemilihan helper
+  # Direvisi 19 Agustus 2026 mengikuti DEC-05, model tawar harga dua arah
 
-  Skenario: Dua helper menerima hampir bersamaan
-    # FR-ORD-004, INV-03
-    Diberikan pesanan ditawarkan ke helper A dan helper B
-    Ketika keduanya menekan terima dalam selisih waktu di bawah satu detik
-    Maka tepat satu helper mendapat respons berhasil
-    Dan helper lainnya mendapat kode ORDER_ALREADY_TAKEN
-    Dan hanya ada satu baris penahanan dana untuk pesanan itu
+  Skenario: Beberapa helper mengajukan tawaran berbeda
+    # FR-ORD-003, FR-ORD-003B
+    Diberikan pesanan berstatus searching dengan harga estimasi client Rp 40.000
+    Ketika helper A mengajukan tawaran Rp 43.000
+    Dan helper B mengajukan tawaran Rp 38.000
+    Maka client melihat dua tawaran dengan nominal dan profil masing masing
+    Dan belum ada dana yang tertahan pada tahap ini
 
-  Skenario: Pengguna tidak bisa menerima pesanannya sendiri
+  Skenario: Memilih tawaran belum menahan dana, konfirmasi helper yang menahan
+    # FR-ORD-003C, FR-ORD-006B, FR-WLT-002
+    Diberikan client memilih tawaran helper B senilai Rp 38.000
+    Ketika status pesanan berubah menjadi pending_confirmation
+    Maka saldo tersedia client belum berkurang
+    Dan ketika helper B mengonfirmasi ketersediaan dalam 60 detik
+    Maka saldo tersedia client berkurang Rp 38.000 dan saldo tertahan bertambah Rp 38.000
+    Dan status pesanan berubah menjadi accepted
+
+  Skenario: Helper terpilih tidak merespons konfirmasi
+    # FR-ORD-006B
+    Diberikan client memilih tawaran helper B
+    Ketika 60 detik berlalu tanpa konfirmasi dari helper B
+    Maka status pesanan kembali menjadi searching
+    Dan client dapat memilih tawaran lain yang masih berlaku
+    Dan tidak ada dana yang tertahan
+
+  Skenario: Helper terpilih ternyata sudah mengambil pesanan lain
+    # INV-06
+    Diberikan client memilih tawaran helper B
+    Dan pada saat bersamaan helper B baru saja dikonfirmasi pada pesanan lain
+    Ketika sistem memeriksa ketersediaan helper B untuk pesanan ini
+    Maka permintaan konfirmasi ditolak dengan kode HELPER_HAS_ACTIVE_ORDER
+    Dan status pesanan kembali menjadi searching
+
+  Skenario: Pengguna tidak bisa mengajukan tawaran pada pesanannya sendiri
     # FR-ORD-016, INV-05
     Diberikan seorang pengguna yang berstatus helper terverifikasi membuat pesanan sebagai client
-    Ketika pengguna tersebut mencoba menerima pesanannya sendiri
+    Ketika pengguna tersebut mencoba mengajukan tawaran pada pesanannya sendiri
     Maka sistem menolak dengan kode SELF_ORDER_NOT_ALLOWED
-    Dan pesanan tetap berstatus searching
 
-  Skenario: Permintaan terima dikirim ulang karena jaringan buruk
+  Skenario: Permintaan konfirmasi dikirim ulang karena jaringan buruk
     # FR-WLT-009, INV-04
-    Diberikan helper menekan terima dan permintaan gagal karena waktu habis di sisi jaringan
+    Diberikan helper menekan konfirmasi dan permintaan gagal karena waktu habis di sisi jaringan
     Ketika aplikasi mengirim ulang permintaan dengan idempotency key yang sama
-    Maka sistem mengembalikan hasil penerimaan yang pertama
+    Maka sistem mengembalikan hasil konfirmasi yang pertama
     Dan tidak tercipta baris penahanan dana kedua
 ```
 

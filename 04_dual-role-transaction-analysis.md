@@ -32,35 +32,47 @@ Larangan konflik kepentingan wajib ditegakkan di sisi server. Sistem menolak `he
 
 ## 3. Kapan uang berpindah
 
-Ini jantung persoalan validasi transaksi dua arah. Usulan saya adalah pola penahanan dana, tercatat sebagai `DEC-02`.
+Bagian ini direvisi 19 Agustus 2026 mengikuti `DEC-05`, model tawar harga dua arah yang disepakati tim. Kesimpulan intinya berubah dari versi draf pertama, jadi baca ulang bagian ini meskipun sudah pernah baca sebelumnya.
 
-Titik waktu penahanan dana bukan saat client menekan pesan, melainkan saat helper menekan terima. Alasannya, kalau ditahan saat client memesan, dana bisa tertahan lama tanpa ada helper yang mau, dan itu merugikan client. Sebaliknya kalau ditahan saat pekerjaan selesai, helper sudah terlanjur bekerja tanpa jaminan. Menahan pada saat penerimaan memberi kepastian dua arah sekaligus, karena helper baru berangkat setelah tahu dananya sudah tertahan.
+Pada model tawar harga, tidak ada momen tunggal "helper menekan terima" di awal, karena yang terjadi lebih dulu adalah beberapa helper mengajukan angka masing masing tanpa komitmen apa pun. Titik yang tepat untuk penahanan dana bergeser menjadi **saat client memilih satu tawaran, dan helper yang dipilih mengonfirmasi masih tersedia**. Dua syarat itu harus terpenuhi bersamaan, bukan salah satu saja, karena kalau dana ditahan begitu client memilih tanpa menunggu konfirmasi helper, ada risiko dana tertahan untuk helper yang ternyata sudah mengambil pesanan lain di saat bersamaan.
+
+Konsekuensinya, ada jeda antara pesanan dibuat dan dana ditahan, dan selama jeda itu client belum kehilangan akses ke saldonya sama sekali. Ini justru sejalan dengan alasan awal kenapa saya tidak mau menahan dana sejak pesanan dibuat, dana tetap bebas dipakai client sampai ada kepastian ganda, yaitu satu harga pasti dan satu helper pasti yang sudah mengonfirmasi.
 
 ```mermaid
 sequenceDiagram
     participant C as Client
     participant S as Sistem
+    participant H1 as Helper A
+    participant H2 as Helper B
     participant W as TD-Wallet
-    participant H as Helper
 
-    C->>S: Buat pesanan, estimasi biaya Rp 43.000
-    S->>W: Cek saldo tersedia
+    C->>S: Buat pesanan, harga estimasi Rp 40.000
+    S->>H1: Siarkan pesanan
+    S->>H2: Siarkan pesanan
+    H1->>S: Ajukan tawaran Rp 43.000
+    H2->>S: Ajukan tawaran Rp 38.000
+    S-->>C: Tampilkan daftar tawaran dengan profil dan rating
+    C->>S: Pilih tawaran Helper B, Rp 38.000
+    S->>H2: Minta konfirmasi ketersediaan, batas 60 detik
+    H2->>S: Konfirmasi tersedia
+    S->>W: Cek saldo tersedia client
     W-->>S: Saldo cukup
-    S->>H: Tawarkan pesanan, tampilkan nominal bersih
-    H->>S: Terima pesanan
-    S->>W: Tahan Rp 43.000 dari saldo client
-    W-->>S: Dana tertahan, id transaksi HOLD-001
+    S->>W: Tahan Rp 38.000 dari saldo client
+    W-->>S: Dana tertahan, id transaksi HOLD-002
+    S-->>H1: Tawaran ditutup, tidak terpilih
     S-->>C: Status diterima, saldo tersedia berkurang
-    S-->>H: Boleh berangkat, dana sudah dijamin
-    H->>S: Tandai pekerjaan selesai, unggah bukti
+    S-->>H2: Boleh berangkat, dana sudah dijamin
+    H2->>S: Tandai pekerjaan selesai
     S-->>C: Minta konfirmasi, batas waktu 24 jam
     C->>S: Konfirmasi selesai
-    S->>W: Lepas dana ke helper dikurangi potongan platform
-    W-->>H: Saldo bertambah Rp 38.700
+    S->>W: Lepas dana ke helper dikurangi potongan platform 10 persen
+    W-->>H2: Saldo bertambah Rp 34.200
     S->>S: Buka jendela penilaian dua arah
 ```
 
 Kalau client diam sampai batas 24 jam, sistem yang mengonfirmasi, ini `FR-ORD-012`. Tanpa aturan ini, helper bisa disandera oleh client yang sekadar malas menekan tombol.
+
+Satu catatan yang perlu diwaspadai bersama Backend dan Mobile. Karena sekarang ada tahap "helper dipilih tapi belum konfirmasi", ada window pendek di mana status pesanan bukan lagi searching tapi juga belum diterima. Status baru ini perlu punya nama sendiri di state machine, saya sebut `pending_confirmation` pada diagram di bagian empat, supaya Mobile tahu harus menampilkan apa selama helper terpilih belum merespons.
 
 ## 4. State machine pesanan
 
@@ -69,10 +81,14 @@ Semua pihak harus sepakat pada satu daftar status. Tanpa ini, BE, Mobile, dan QA
 ```mermaid
 stateDiagram-v2
     [*] --> DRAFT
-    DRAFT --> SEARCHING: client konfirmasi pesanan
-    SEARCHING --> ACCEPTED: helper menerima, dana ditahan
-    SEARCHING --> EXPIRED: tidak ada helper dalam 300 detik
-    SEARCHING --> CANCELLED_BY_CLIENT: client batal sebelum ada helper
+    DRAFT --> SEARCHING: client konfirmasi pesanan, disiarkan ke helper
+    SEARCHING --> SEARCHING: helper lain mengajukan tawaran
+    SEARCHING --> PENDING_CONFIRMATION: client memilih satu tawaran
+    SEARCHING --> EXPIRED: jendela 300 detik habis tanpa tawaran masuk
+    SEARCHING --> CANCELLED_BY_CLIENT: client batal sebelum memilih tawaran
+
+    PENDING_CONFIRMATION --> ACCEPTED: helper terpilih konfirmasi, dana ditahan
+    PENDING_CONFIRMATION --> SEARCHING: helper terpilih tidak merespons 60 detik, atau sudah ambil pesanan lain
 
     ACCEPTED --> ON_THE_WAY: helper berangkat
     ON_THE_WAY --> ARRIVED: helper tiba di lokasi
@@ -161,14 +177,16 @@ Invarian adalah pernyataan yang harus selalu benar. Kalau salah satunya pernah s
 | Client mengisi saldo saat pesanan sedang menunggu karena saldo kurang | Sistem mencoba ulang penahanan dana secara otomatis satu kali setelah saldo masuk |
 | Jam pada perangkat pengguna dimundurkan untuk mengakali batas waktu | Seluruh perhitungan waktu memakai waktu server, perangkat hanya menampilkan |
 
-## 9. Bahan diskusi penting untuk Tim
+## 9. Status pertanyaan terbuka setelah sesi 19 Agustus 2026
 
-Pertama, apakah dompet dalam lingkup lab berjalan dengan saldo simulasi atau perlu integrasi gerbang pembayaran sungguhan. Jawabannya menentukan besar kecilnya lingkup modul WLT.
+Lima pertanyaan yang sebelumnya tertulis di bagian ini sudah dibahas tim. Status masing masing berikut, dan satu pertanyaan baru muncul sebagai turunannya.
 
-Kedua, berapa besar potongan platform dan apakah ditanggung client, helper, atau dibagi. Ini memengaruhi rumus biaya dan tampilan rincian di dua sisi.
+Pertama, soal dompet simulasi atau gerbang pembayaran sungguhan, sudah diputuskan, `DEC-04`. Dompet berjalan simulasi, integrasi sungguhan dicatat sebagai arah pengembangan lanjutan di luar lingkup lab.
 
-Ketiga, apakah pesanan dicocokkan dengan penawaran serentak ke banyak helper, pemilihan langsung oleh client, atau keduanya. Prototipe menampilkan daftar helper yang bisa dipilih, tetapi kartu pesanan aktif menyebut helper yang sudah ditugaskan, jadi keduanya mungkin dimaksudkan.
+Kedua, soal besar potongan platform, belum tuntas. Tim sepakat komisi harus terhitung jelas untuk kepentingan tim, stakeholder, dan pengguna, tapi angkanya belum ditetapkan. SA merekomendasikan 10 persen ditanggung helper, `DEC-08`, masih menunggu persetujuan eksplisit. Penjelasan lengkap alasannya ada di `10_dokumentasi-keputusan-minggu-1.md`.
 
-Keempat, apakah pelacakan memakai lokasi sungguhan lewat peta atau cukup simulasi perubahan status. Ini pertanyaan besar untuk beban kerja Mobile dan BE.
+Ketiga, soal mode pencocokan pesanan, sudah diputuskan dan ternyata bukan sekadar gabungan broadcast dan direct seperti opsi yang saya tawarkan sebelumnya. Tim memilih model tawar harga dua arah, `DEC-05`, di mana client mengajukan harga estimasi dan beberapa helper mengajukan tawaran masing masing untuk dipilih. Ini mengubah titik penahanan dana, lihat bagian tiga yang sudah direvisi, dan mengubah state machine di bagian empat.
 
-Kelima, siapa yang berperan sebagai admin operasional untuk verifikasi identitas dan sengketa, dan apakah panel admin masuk lingkup proyek atau cukup dijelaskan sebagai proses manual di luar sistem.
+Keempat, soal pelacakan lokasi sungguhan atau simulasi status, sudah diputuskan, `DEC-06`. Untuk saat ini memakai perubahan status, bukan lokasi GPS langsung. Ini perlu disampaikan ke UI/UX di sesi user flow, karena layar pelacakan pada prototipe menampilkan peta dengan pergerakan langsung, dan itu perlu digambar ulang sebagai visualisasi tahapan status, bukan peta real time.
+
+Kelima, soal siapa admin operasional, terjawab sebagian, `DEC-07`. Mentor lab berperan sebagai admin untuk verifikasi identitas dan sengketa. Yang belum terjawab adalah pertanyaan baru turunannya, apakah mentor mengakses lewat panel admin sungguhan di dalam sistem, yang berarti ada modul tambahan yang harus dibangun, atau lewat proses manual di luar sistem seperti spreadsheet dan formulir yang datanya disiapkan tim. Ini perlu diklarifikasi eksplisit ke mentor sendiri, bukan diasumsikan oleh tim, karena dua pilihan itu berbeda jauh dari sisi beban kerja Backend.
