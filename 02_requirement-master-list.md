@@ -87,7 +87,7 @@ Modul ini adalah inti sistem. Detail transisi status ada di `04_dual-role-transa
 
 Catatan lingkup, hasil keputusan tim 19 Agustus 2026, `DEC-04`. Seluruh transaksi pada modul ini berjalan sebagai saldo simulasi, tidak ada uang sungguhan yang berpindah. Integrasi payment gateway sungguhan seperti Midtrans atau Xendit dicatat sebagai arah pengembangan lanjutan, tidak masuk lingkup pengerjaan lab saat ini, dan disebutkan eksplisit di bagian batasan SRS supaya tidak jadi ekspektasi keliru saat presentasi.
 
-Catatan komisi, `DEC-08`, masih berstatus usulan menunggu persetujuan tim. Rekomendasi SA adalah komisi platform sebesar 10 persen, dipotong dari nominal yang diterima helper, bukan ditambahkan ke tagihan client. Penjelasan lengkap alasan angka ini ada di `10_dokumentasi-keputusan-minggu-1.md`.
+Catatan komisi, `DEC-08`, masih berstatus usulan menunggu persetujuan tim. Rekomendasi SA adalah komisi platform sebesar 10 persen, dipotong dari nominal yang diterima helper, bukan ditambahkan ke tagihan client. Penjelasan lengkap alasan angka ini ada di `09_dokumentasi-keputusan-minggu-1.md`.
 
 | Kode | Functional Requirement | Prioritas | Sumber | Status |
 | --- | --- | --- | --- | --- |
