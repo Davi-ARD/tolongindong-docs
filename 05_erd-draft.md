@@ -26,6 +26,9 @@ erDiagram
     USER ||--o{ USER_VOUCHER : memiliki
     VOUCHER ||--o{ USER_VOUCHER : diterbitkan
     USER ||--o{ VERIFICATION_REQUEST : mengajukan
+    USER ||--o{ VERIFICATION_REQUEST : "meninjau sebagai admin"
+    USER ||--o{ DISPUTE : "memutuskan sebagai admin"
+    USER ||--o{ ADMIN_ACTION_LOG : melakukan
 
     USER {
         bigint id PK
@@ -35,6 +38,7 @@ erDiagram
         varchar password_hash
         varchar photo_url
         enum id_verification_status
+        boolean is_admin
         timestamp created_at
     }
 
@@ -151,12 +155,10 @@ erDiagram
     RATING {
         bigint id PK
         bigint order_id FK
-        bigint rater_user_id FK
-        bigint rated_user_id FK
-        varchar rater_role
+        bigint client_id FK
+        bigint helper_id FK
         int score
         text review
-        boolean is_revealed
         timestamp created_at
     }
 
@@ -184,6 +186,7 @@ erDiagram
         text reason
         enum resolution
         text admin_note
+        bigint resolved_by_admin_id FK
         timestamp resolved_at
     }
 
@@ -194,7 +197,18 @@ erDiagram
         varchar selfie_url
         enum review_status
         text rejection_reason
+        bigint reviewed_by_admin_id FK
         timestamp reviewed_at
+    }
+
+    ADMIN_ACTION_LOG {
+        bigint id PK
+        bigint admin_user_id FK
+        varchar action_type
+        varchar target_entity
+        bigint target_id
+        text note
+        timestamp created_at
     }
 
     VOUCHER {
@@ -242,7 +256,11 @@ Tabel `order_offer` diperbarui 19 Agustus 2026 mengikuti `DEC-05`, model tawar h
 
 Kolom `order.total_amount` yang tadinya dihitung dari `base_fee` ditambah komponen lain sekarang dihitung dari `proposed_price` milik tawaran yang berstatus `confirmed`, bukan dari `base_fee` client lagi. Kolom `base_fee` tetap disimpan sebagai harga estimasi awal untuk keperluan tampilan perbandingan, tapi tidak lagi jadi dasar penahanan dana.
 
-Kolom `is_revealed` pada `rating` melaksanakan aturan penilaian tertutup. Penilaian dibuat lebih dulu tetapi baru terlihat setelah kedua pihak mengisi atau tenggat lewat.
+Kolom `is_revealed` pada `rating` sudah dihapus 28 Agustus 2026 mengikuti `DEC-09`. Penilaian sekarang satu arah, hanya Client menilai Helper, jadi tabel `rating` disederhanakan jadi `client_id` dan `helper_id` langsung tanpa kolom `rater_role`, dan tidak butuh mekanisme tunda tampil karena tidak ada lagi pihak kedua yang ditunggu.
+
+Modul admin, ditambahkan 28 Agustus 2026 mengikuti `DEC-07` yang sudah final. Kolom `is_admin` pada `user` menandai akun admin, dipakai untuk pengecekan otorisasi di setiap endpoint admin. BE perlu memastikan akun dengan `is_admin` bernilai benar tidak bisa dipakai mendaftar sebagai Client atau Helper lewat jalur normal, karena akun admin dibuat lewat proses terpisah, bukan lewat form registrasi publik.
+
+Kolom `resolved_by_admin_id` pada `dispute` dan `reviewed_by_admin_id` pada `verification_request` mencatat admin mana yang mengambil keputusan, keduanya menunjuk ke `user.id` dengan syarat `is_admin` bernilai benar. Tabel `admin_action_log` ada supaya setiap tindakan admin (bukan cuma dua tabel itu) tercatat dalam satu tempat yang bisa diaudit, `target_entity` diisi nama tabel yang kena aksi seperti `verification_request` atau `dispute`, dan `target_id` diisi id barisnya.
 
 ## 3. Nilai enumerasi
 
@@ -250,12 +268,12 @@ Kolom `is_revealed` pada `rating` melaksanakan aturan penilaian tertutup. Penila
 | --- | --- |
 | `user.id_verification_status` | `unverified`, `pending`, `verified`, `rejected` |
 | `order.status` | `draft`, `searching`, `accepted`, `on_the_way`, `arrived`, `in_progress`, `price_adjustment`, `awaiting_confirmation`, `completed`, `cancelled_by_client`, `cancelled_by_helper`, `expired`, `disputed`, `refunded` |
-| `order_offer.offer_status` | `sent`, `accepted`, `skipped`, `expired` |
+| `order_offer.offer_status` | `submitted`, `selected`, `confirmed`, `not_selected`, `withdrawn` (diperbaiki 28 Agu 2026, sebelumnya salah ketik menyisakan nilai lama yang sudah tidak berlaku sejak DEC-05) |
 | `wallet_transaction.transaction_type` | `topup`, `hold`, `release`, `refund`, `payout`, `commission`, `adjustment`, `cancellation_fee` |
 | `price_adjustment.approval_status` | `pending`, `approved`, `rejected` |
-| `dispute.resolution` | `pending`, `favor_client`, `favor_helper`, `split` |
-| `rating.rater_role` | `client`, `helper` |
+| `dispute.resolution` | `pending`, `favor_client`, `favor_helper`, `split`. Hanya berlaku untuk pesanan kategori Delivery sejak `DEC-10`, lihat pertanyaan terbuka soal Food run di `04_dual-role-transaction-analysis.md` |
+| `admin_action_log.action_type` | `approve_verification`, `reject_verification`, `resolve_dispute` |
 
 ## 4. Indeks yang disarankan
 
-BE perlu menambahkan indeks pada `order(client_id, status)` dan `order(helper_id, status)` karena dua kueri paling sering adalah daftar pesanan saya sebagai client dan pesanan aktif saya sebagai helper. Tambahkan juga indeks pada `order_offer(helper_id, offer_status)` untuk pencarian tawaran yang belum direspons, dan indeks unik gabungan pada `rating(order_id, rater_role)` untuk menegakkan invarian `INV-08` di tingkat basis data, bukan hanya di kode.
+BE perlu menambahkan indeks pada `order(client_id, status)` dan `order(helper_id, status)` karena dua kueri paling sering adalah daftar pesanan saya sebagai client dan pesanan aktif saya sebagai helper. Tambahkan juga indeks pada `order_offer(helper_id, offer_status)` untuk pencarian tawaran yang belum direspons, dan indeks unik pada `rating(order_id)` untuk menegakkan invarian `INV-08` di tingkat basis data, satu pesanan hanya boleh punya satu baris penilaian sejak rating jadi satu arah.

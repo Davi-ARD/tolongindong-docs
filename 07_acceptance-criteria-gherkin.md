@@ -209,37 +209,85 @@ Fitur: Pembatalan pesanan
     Dan jumlah pembatalan helper bertambah satu
     Dan client menerima notifikasi beserta tawaran mencari helper lain
 
-  Skenario: Pesanan yang sedang dikerjakan tidak bisa dibatalkan sepihak
-    # FR-ORD-011
-    Diberikan pesanan berstatus in_progress
+  Skenario: Pesanan yang sedang dikerjakan tidak bisa dibatalkan sepihak, kategori Delivery
+    # FR-ORD-011, DEC-10
+    Diberikan pesanan berkategori Delivery berstatus in_progress
     Ketika client menekan batalkan
     Maka sistem menolak pembatalan langsung
     Dan mengarahkan client ke pengajuan sengketa
+
+  Skenario: Sengketa ditolak untuk kategori selain Delivery
+    # FR-ORD-018, DEC-10
+    Diberikan pesanan berkategori Household berstatus awaiting_confirmation
+    Ketika client mencoba mengajukan sengketa
+    Maka sistem menolak dengan pesan bahwa kanal sengketa hanya tersedia untuk kategori Delivery
+    Dan client hanya memiliki opsi konfirmasi selesai atau membiarkan batas waktu 24 jam berlalu
 ```
 
-## 6. Penilaian dua arah
+## 6. Penilaian satu arah
+
+Direvisi 28 Agustus 2026 mengikuti DEC-09. Dua skenario lama soal penilaian tersembunyi dan terbuka setelah tenggat dihapus karena mekanisme dua arah sudah tidak berlaku, digantikan satu skenario penilaian langsung terlihat.
 
 ```gherkin
-Fitur: Penilaian dua arah
-  Skenario: Penilaian disembunyikan sampai keduanya mengisi
-    # FR-RTG-002
+Fitur: Penilaian satu arah
+  Skenario: Client memberi penilaian dan langsung terlihat
+    # FR-RTG-001, FR-RTG-003
     Diberikan pesanan berstatus completed
-    Dan client sudah memberi penilaian tiga bintang
-    Ketika helper membuka halaman ulasan sebelum ia sendiri menilai
-    Maka helper tidak dapat melihat isi penilaian client
+    Ketika client memberi penilaian empat bintang dengan ulasan
+    Maka penilaian langsung tercatat dan terlihat pada profil helper
+    Dan rating rata rata helper diperbarui tanpa masa tunda
 
-  Skenario: Penilaian terbuka setelah tenggat
-    # FR-RTG-002
-    Diberikan hanya client yang memberi penilaian
-    Ketika 72 jam berlalu sejak pesanan selesai
-    Maka penilaian client menjadi terlihat
-    Dan rating rata rata helper diperbarui
+  Skenario: Helper tidak memiliki jalur memberi penilaian
+    # DEC-09
+    Diberikan pesanan berstatus completed
+    Ketika helper membuka aplikasi
+    Maka tidak ada menu atau tombol untuk menilai client di mana pun pada aplikasi
 
   Skenario: Pesanan batal tidak bisa dinilai
     # FR-RTG-004
     Diberikan pesanan berstatus cancelled_by_helper
     Ketika client mencoba memberi penilaian
     Maka sistem menolak permintaan tersebut
+```
+
+## 6B. Panel admin
+
+Baru ditambahkan 28 Agustus 2026 mengikuti DEC-07. Modul ini belum pernah ditinjau BE, skenario di bawah kemungkinan masih berubah setelah sesi BE.
+
+```gherkin
+Fitur: Panel admin
+  Skenario: Akun biasa tidak bisa akses panel admin
+    # FR-ADM-002
+    Diberikan akun Client atau Helper yang tidak bertanda admin
+    Ketika akun tersebut mencoba mengakses endpoint atau halaman admin
+    Maka sistem menolak dengan kode 403
+
+  Skenario: Admin menyetujui verifikasi
+    # FR-ADM-003, FR-ADM-004, FR-ADM-008
+    Diberikan pengajuan verifikasi Helper berstatus pending
+    Ketika admin menyetujui pengajuan tersebut
+    Maka status verifikasi Helper menjadi verified
+    Dan Helper tersebut dapat mulai menerima tawaran pesanan
+    Dan tercatat satu baris baru di admin_action_log
+
+  Skenario: Admin menolak verifikasi wajib mengisi alasan
+    # FR-ADM-004
+    Diberikan pengajuan verifikasi Helper berstatus pending
+    Ketika admin menolak tanpa mengisi alasan penolakan
+    Maka sistem menolak permintaan tersebut
+
+  Skenario: Admin memutuskan sengketa hanya untuk kategori Delivery
+    # FR-ADM-005, FR-ADM-006, DEC-10
+    Diberikan sengketa masuk untuk pesanan berkategori Delivery
+    Ketika admin memutuskan resolusi berpihak pada helper
+    Maka dana tertahan dilepas ke helper
+    Dan status pesanan menjadi completed
+
+  Skenario: Sengketa untuk kategori selain Delivery tidak pernah muncul di panel admin
+    # FR-ADM-005, DEC-10
+    Diberikan tidak ada pesanan kategori Delivery yang bersengketa
+    Ketika admin membuka daftar sengketa
+    Maka daftar tersebut kosong meskipun ada pesanan kategori lain yang bermasalah
 ```
 
 ## 7. Catatan pengujian tambahan untuk QA

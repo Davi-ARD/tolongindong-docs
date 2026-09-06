@@ -9,7 +9,7 @@ Status dokumen: `REVIEW` v0.1
 | ACT-01 | Client | Setiap akun terdaftar otomatis menjadi client |
 | ACT-02 | Helper | Hanya akun yang lolos verifikasi dan mengaktifkan ketersediaan |
 | ACT-03 | Sistem | Aktor untuk proses terjadwal seperti pelepasan dana otomatis dan pembatalan karena kehabisan waktu |
-| ACT-04 | Admin operasional | Di luar aplikasi mobile, diakses lewat panel terpisah |
+| ACT-04 | Admin operasional | Diperankan oleh Mentor. Dikonfirmasi 28 Agustus 2026 (DEC-07), mengakses lewat panel admin sungguhan di dalam sistem, bukan proses manual di luar sistem |
 
 ## 2. Daftar use case
 
@@ -31,13 +31,16 @@ Status dokumen: `REVIEW` v0.1
 | UC-ORD-05 | Mengonfirmasi pesanan selesai | Client, Sistem | FR-ORD-010, 012 |
 | UC-ORD-06 | Mengajukan penyesuaian harga talangan | Helper | FR-ORD-014 |
 | UC-ORD-07 | Membatalkan pesanan | Client, Helper | FR-ORD-011 |
-| UC-ORD-08 | Mengajukan sengketa | Client, Helper | FR-ORD-018 |
+| UC-ORD-08 | Mengajukan sengketa, khusus pesanan kategori Delivery (DEC-10) | Client, Helper | FR-ORD-018 |
 | UC-WLT-01 | Mengisi saldo | Client | FR-WLT-006 |
 | UC-WLT-02 | Melihat riwayat mutasi saldo | Client, Helper | FR-WLT-005 |
 | UC-WLT-03 | Menarik pendapatan | Helper | FR-WLT-007 |
 | UC-CHT-01 | Berkirim pesan dalam pesanan | Client, Helper | FR-CHT-001, 002, 003 |
-| UC-RTG-01 | Memberi penilaian dua arah | Client, Helper | FR-RTG-001, 002 |
+| UC-RTG-01 | Memberi penilaian (satu arah, Client ke Helper) | Client | FR-RTG-001 |
 | UC-PRF-01 | Mengelola alamat tersimpan | Client | FR-PRF-002, 003 |
+| UC-ADM-01 | Meninjau dan memutuskan pengajuan verifikasi identitas | Admin operasional | FR-ADM-003, 004 |
+| UC-ADM-02 | Meninjau dan memutuskan sengketa | Admin operasional | FR-ADM-005, 006 |
+| UC-ADM-03 | Melihat ringkasan agregat komisi | Admin operasional | FR-ADM-007 |
 
 ## 3. Peta relasi aktor dan use case
 
@@ -71,11 +74,11 @@ flowchart LR
 
     subgraph Sosial
         UC14["UC-CHT-01 Percakapan"]
-        UC15["UC-RTG-01 Penilaian dua arah"]
+        UC15["UC-RTG-01 Penilaian satu arah"]
     end
 
     C --> UC1 & UC2 & UC3 & UC5 & UC8 & UC10 & UC11 & UC14 & UC15
-    H --> UC2 & UC4 & UC6 & UC7 & UC9 & UC10 & UC12 & UC14 & UC15
+    H --> UC2 & UC4 & UC6 & UC7 & UC9 & UC10 & UC12 & UC14
     S --> UC13
     UC3 -.include.-> UC4
     UC6 -.include.-> UC13
@@ -107,6 +110,8 @@ Berikut layar yang terlihat pada video prototipe beserta elemen yang bisa diveri
 
 Ini daftar layar dan kondisi yang belum ada di prototipe tetapi wajib ada supaya sistem bisa jalan. Daftar ini yang saya bawa ke UI/UX Designer.
 
+**Status per 28 Agustus 2026**: isi logika bisnis di bawah ini sudah dibahas dan sebagian dikonfirmasi lewat diskusi dengan UI/UX (lihat `draf-alur-untuk-sesi-uiux.md` untuk hasil finalnya per alur). Yang belum masuk ke sini adalah baris resmi baru di tabel bagian 4, karena itu menunggu nama layar dan elemen visual sungguhan dari hasil desain, bukan cuma konfirmasi lisan atau tertulis soal logikanya.
+
 Alur akun belum tergambar sama sekali. Tidak ada layar registrasi, login, input OTP, maupun lupa kata sandi, padahal onboarding berakhir di tombol mulai. Ini pekerjaan pertama untuk desainer.
 
 Alur pembuatan pesanan juga belum ada. Prototipe melompat dari daftar helper langsung ke pelacakan, jadi belum terlihat bagaimana client mengisi deskripsi tugas, memilih alamat, melihat rincian estimasi biaya, dan menekan konfirmasi bayar. Ini alur paling kritis karena di sinilah uang mulai ditahan.
@@ -115,9 +120,11 @@ Sisi helper belum tergambar sama sekali. Belum ada layar tawaran pesanan masuk d
 
 Kondisi tidak normal belum tergambar. Belum ada tampilan saat tidak ada helper tersedia, saat saldo tidak cukup, saat pembayaran gagal, saat pesanan dibatalkan helper, dan saat koneksi terputus di tengah pelacakan.
 
-Alur penilaian dan sengketa belum ada, padahal rating helper sudah tampil di kartu daftar helper. Artinya sumber angka itu belum punya layar penghasilnya.
+Alur penilaian dan sengketa sudah direvisi, lihat catatan status di atas. Penilaian sekarang satu arah saja dari Client ke Helper (DEC-09), dan sengketa dikhususkan hanya kategori Delivery (DEC-10).
 
 Terakhir, verifikasi identitas hanya muncul sebagai lencana. Layar unggah kartu identitas, swafoto, status peninjauan, dan alasan penolakan belum ada.
+
+Satu tambahan baru di luar tujuh poin di atas: layar pelacakan yang sudah ada di prototipe (poin peta dengan ETA langsung) perlu **digambar ulang**, dikonfirmasi 28 Agustus 2026 tidak ada perubahan dari keputusan `DEC-06` sebelumnya, tetap memakai visualisasi tahapan status, bukan peta real time.
 
 ## 6. Templat use case scenario
 

@@ -62,6 +62,8 @@ Pertama, transparansi pendapatan. Helper harus bisa melihat rincian berapa yang 
 
 Kedua, kepastian pembayaran. Dana ditahan sistem sejak pesanan diterima sehingga helper punya jaminan bahwa client benar benar punya saldo. Ini menjadi `FR-WLT-002` dan pembatalan sepihak setelah helper berangkat tetap memberi kompensasi, diatur di `FR-ORD-011`.
 
-Ketiga, perlindungan dari penilaian sepihak. Penilaian bersifat dua arah dan tertutup sampai keduanya mengisi, sehingga helper tidak bisa ditekan dengan ancaman bintang satu. Ini menjadi `FR-RTG-002`.
+Ketiga, perlindungan dari penilaian sepihak. Poin ini direvisi 28 Agustus 2026 mengikuti `DEC-09`. Argumen awal di sini mengandalkan penilaian dua arah yang tertutup sampai keduanya mengisi, sehingga Helper tidak bisa ditekan dengan ancaman bintang satu. Mekanisme itu sudah dihapus dari lingkup, `FR-RTG-002` dinyatakan DEPRECATED, sehingga argumen ini tidak lagi punya requirement pendukung.
 
-Ketiganya sudah masuk daftar requirement
+Ini bukan sekadar detail administratif, ini kehilangan satu dari tiga argumen SDG 8 yang tadinya dipakai membenarkan desain sistem. Kalau tim ingin bab pendahuluan SRS tetap mengklaim "perlindungan dari penilaian sepihak" sebagai bagian dari kontribusi SDG 8, klaim itu perlu argumen pengganti, atau dihapus saja dari narasi dan cukup mengandalkan dua poin pertama. Saya tidak mengarang argumen pengganti sendiri di sini karena itu keputusan yang sebaiknya diambil sadar oleh tim, bukan ditutupi diam diam supaya narasinya tetap kelihatan lengkap.
+
+Dua yang pertama tetap berlaku dan sudah masuk daftar requirement.

@@ -66,7 +66,7 @@ Modul ini adalah inti sistem. Detail transisi status ada di `04_dual-role-transa
 | FR-ORD-003B | Sistem harus menampilkan seluruh tawaran harga yang masuk kepada client, masing masing beserta profil helper, rating, dan nominal yang diajukan, agar client dapat membandingkan sebelum memilih | Must | TURUNAN, BARU (DEC-05) | DRAFT |
 | FR-ORD-003C | Sistem harus mengizinkan client memilih satu tawaran dari daftar yang masuk, dan pilihan ini yang memicu penahanan dana serta penolakan otomatis terhadap tawaran lain | Must | TURUNAN, BARU (DEC-05) | DRAFT |
 | FR-ORD-003D | Sistem harus mendukung jalur pemesanan langsung ke satu helper tertentu tanpa melalui tahap tawaran, ketika client memilih helper langsung dari halaman cari helper | Should | TURUNAN | DRAFT |
-| FR-ORD-004 | Sistem harus menutup jendela penawaran 300 detik setelah pesanan disiarkan, dan mengizinkan client memilih dari tawaran yang sudah masuk meskipun jendela belum ditutup penuh jika sudah ada minimal satu tawaran | Must | ASUMSI, DIREVISI 19 Agu 2026 (DEC-05) | DRAFT |
+| FR-ORD-004 | Sistem harus menutup jendela penawaran 300 detik setelah pesanan disiarkan, dan mengizinkan client memilih dari tawaran yang sudah masuk meskipun jendela belum ditutup penuh jika sudah ada minimal satu tawaran | Must | ASUMSI, DIVALIDASI 28 Agu 2026 oleh UI/UX, nilai 300 detik tidak berubah | REVIEW |
 | FR-ORD-005 | Sistem harus membatalkan pesanan secara otomatis jika tidak ada satu pun tawaran masuk sampai jendela penawaran berakhir, dan mengembalikan dana tertahan secara penuh jika ada | Must | ASUMSI | DRAFT |
 | FR-ORD-006 | Sistem harus menampilkan kepada helper nominal bersih yang akan diterima berdasarkan harga yang mereka ajukan sendiri, dihitung sebelum tawaran dikirim | Must | TURUNAN, DIREVISI 19 Agu 2026 (DEC-05) | DRAFT |
 | FR-ORD-006B | Sistem harus meminta konfirmasi ulang dari helper terpilih dalam 60 detik setelah client memilih tawarannya, sebelum dana benar benar ditahan, untuk mengantisipasi helper yang sudah tidak tersedia lagi | Must | TURUNAN, BARU (DEC-05) | DRAFT |
@@ -81,13 +81,13 @@ Modul ini adalah inti sistem. Detail transisi status ada di `04_dual-role-transa
 | FR-ORD-015 | Sistem harus menyimpan riwayat pesanan client dan helper beserta status akhir dan rincian biaya | Must | PROTO | DRAFT |
 | FR-ORD-016 | Sistem harus melarang seorang pengguna menerima pesanan yang dibuat oleh dirinya sendiri | Must | TURUNAN | DRAFT |
 | FR-ORD-017 | Sistem harus membatasi jumlah pesanan berstatus aktif menjadi maksimal satu untuk setiap helper pada satu waktu | Should | ASUMSI | DRAFT |
-| FR-ORD-018 | Sistem harus menyediakan kanal sengketa bagi client dan helper dalam 24 jam setelah pesanan ditandai selesai | Should | TURUNAN | DRAFT |
+| FR-ORD-018 | Sistem harus menyediakan kanal sengketa bagi client dan helper dalam 24 jam setelah pesanan ditandai selesai, khusus untuk pesanan berkategori Delivery. Kategori lain tidak memiliki jalur sengketa formal pada versi ini | Should | TURUNAN, DIREVISI 28 Agu 2026 (DEC-10) | DRAFT |
 
 ## 6. Modul WLT, dompet dan pembayaran
 
 Catatan lingkup, hasil keputusan tim 19 Agustus 2026, `DEC-04`. Seluruh transaksi pada modul ini berjalan sebagai saldo simulasi, tidak ada uang sungguhan yang berpindah. Integrasi payment gateway sungguhan seperti Midtrans atau Xendit dicatat sebagai arah pengembangan lanjutan, tidak masuk lingkup pengerjaan lab saat ini, dan disebutkan eksplisit di bagian batasan SRS supaya tidak jadi ekspektasi keliru saat presentasi.
 
-Catatan komisi, `DEC-08`, masih berstatus usulan menunggu persetujuan tim. Rekomendasi SA adalah komisi platform sebesar 10 persen, dipotong dari nominal yang diterima helper, bukan ditambahkan ke tagihan client. Penjelasan lengkap alasan angka ini ada di `09_dokumentasi-keputusan-minggu-1.md`.
+Catatan komisi, `DEC-08`, dikonfirmasi 28 Agustus 2026, komisi platform ditetapkan 10 persen, dipotong dari nominal yang diterima helper, bukan ditambahkan ke tagihan client. Penjelasan lengkap alasan angka ini ada di `09_dokumentasi-keputusan-minggu-1.md`.
 
 | Kode | Functional Requirement | Prioritas | Sumber | Status |
 | --- | --- | --- | --- | --- |
@@ -113,13 +113,15 @@ Catatan komisi, `DEC-08`, masih berstatus usulan menunggu persetujuan tim. Rekom
 | FR-CHT-004 | Sistem harus menutup ruang percakapan tujuh hari setelah pesanan selesai dan menjadikannya hanya bisa dibaca | Could | ASUMSI | DRAFT |
 | FR-CHT-005 | Sistem harus menyediakan tombol panggilan telepon ke helper pada halaman pelacakan | Should | PROTO | DRAFT |
 
-## 8. Modul RTG, penilaian dua arah
+## 8. Modul RTG, penilaian satu arah
+
+Catatan revisi 28 Agustus 2026, `DEC-09`. Modul ini semula bernama "penilaian dua arah". Hasil diskusi dengan UI/UX, penilaian balik dari Helper ke Client dihapus dari lingkup, bukan sekadar digabung ke layar lain. Penilaian sekarang satu arah, hanya Client menilai Helper, dan langsung terlihat tanpa mekanisme tunda atau sembunyikan.
 
 | Kode | Functional Requirement | Prioritas | Sumber | Status |
 | --- | --- | --- | --- | --- |
 | FR-RTG-001 | Sistem harus meminta client memberi penilaian satu sampai lima bintang dan ulasan opsional setelah pesanan selesai | Must | TURUNAN | DRAFT |
-| FR-RTG-002 | Sistem harus meminta helper memberi penilaian terhadap client dan menyembunyikan kedua penilaian sampai keduanya mengisi atau sampai lewat 72 jam | Must | TURUNAN | DRAFT |
-| FR-RTG-003 | Sistem harus menghitung rating rata rata helper dari seluruh penilaian yang sudah terbuka dan menampilkannya dengan satu angka desimal | Must | PROTO | DRAFT |
+| FR-RTG-002 | ~~Sistem harus meminta helper memberi penilaian terhadap client dan menyembunyikan kedua penilaian sampai keduanya mengisi atau sampai lewat 72 jam~~ | Must | TURUNAN | DEPRECATED, dihapus 28 Agu 2026 (DEC-09). Digantikan oleh model satu arah, tidak ada requirement pengganti karena memang tidak ada lagi penilaian dari sisi Helper |
+| FR-RTG-003 | Sistem harus menghitung rating rata rata helper dari seluruh penilaian client dan menampilkannya dengan satu angka desimal, ditampilkan langsung tanpa masa tunda | Must | PROTO, DIREVISI 28 Agu 2026 (DEC-09) | DRAFT |
 | FR-RTG-004 | Sistem harus menolak penilaian pada pesanan yang berstatus batal | Must | TURUNAN | DRAFT |
 
 ## 9. Modul NOT, notifikasi
@@ -131,6 +133,23 @@ Catatan komisi, `DEC-08`, masih berstatus usulan menunggu persetujuan tim. Rekom
 | FR-NOT-003 | Sistem harus mengirim notifikasi tawaran pesanan baru kepada helper yang memenuhi syarat | Must | TURUNAN | DRAFT |
 | FR-NOT-004 | Sistem harus mengirim notifikasi mutasi saldo untuk setiap penahanan, pelepasan, dan pengembalian dana | Should | TURUNAN | DRAFT |
 | FR-NOT-005 | Sistem harus menyediakan halaman daftar notifikasi dengan penyimpanan riwayat 30 hari terakhir | Should | PROTO | DRAFT |
+
+## 9B. Modul ADM, panel admin
+
+Modul baru, ditambahkan 28 Agustus 2026 mengikuti `DEC-07` yang sudah final, Mentor mengakses lewat panel admin sungguhan di dalam sistem, bukan proses manual. Ini menambah lingkup baru yang sebelumnya tidak ada di manapun pada workspace, jadi seluruh isi modul ini berstatus `DRAFT` dan `ASUMSI` sampai ditinjau ulang bersama BE, karena rancangannya baru pertama kali ditulis di sini.
+
+Cakupan modul ini sengaja diminimalkan sesuai kebutuhan yang sudah teridentifikasi, verifikasi identitas Helper dan penyelesaian sengketa, ditambah satu kebutuhan yang muncul dari diskusi soal komisi, yaitu ringkasan agregat komisi platform untuk kepentingan stakeholder. Fitur manajemen pengguna umum, seperti menonaktifkan akun Client atau Helper, sengaja belum dimasukkan karena belum pernah dibahas eksplisit dengan tim, dan lebih baik ditambahkan lewat keputusan baru daripada saya asumsikan sendiri.
+
+| Kode | Functional Requirement | Prioritas | Sumber | Status |
+| --- | --- | --- | --- | --- |
+| FR-ADM-001 | Sistem harus menyediakan login terpisah untuk akun admin, tidak memakai jalur registrasi dan login yang sama dengan Client dan Helper | Must | ASUMSI | DRAFT |
+| FR-ADM-002 | Sistem harus menolak akses ke seluruh endpoint dan halaman admin bagi akun yang tidak bertanda admin, termasuk akun Client dan Helper yang mencoba mengakses langsung lewat URL | Must | TURUNAN | DRAFT |
+| FR-ADM-003 | Sistem harus menampilkan daftar pengajuan verifikasi identitas Helper yang berstatus menunggu peninjauan, beserta foto KTP dan swafoto yang diunggah | Must | TURUNAN | DRAFT |
+| FR-ADM-004 | Sistem harus mengizinkan admin menyetujui atau menolak pengajuan verifikasi, dan mewajibkan alasan penolakan diisi jika ditolak | Must | TURUNAN | DRAFT |
+| FR-ADM-005 | Sistem harus menampilkan daftar sengketa yang masuk beserta detail pesanan dan bukti terkait, dibatasi hanya pesanan berkategori Delivery sesuai FR-ORD-018 | Must | TURUNAN | DRAFT |
+| FR-ADM-006 | Sistem harus mengizinkan admin memutuskan hasil sengketa dengan tiga pilihan, berpihak client, berpihak helper, atau dibagi, dan mewajibkan catatan keputusan diisi | Must | TURUNAN | DRAFT |
+| FR-ADM-007 | Sistem harus menampilkan ringkasan agregat komisi platform yang terkumpul kepada admin, dapat disaring berdasarkan rentang tanggal | Should | TURUNAN | DRAFT |
+| FR-ADM-008 | Sistem harus mencatat setiap tindakan admin (persetujuan verifikasi, penolakan, keputusan sengketa) beserta identitas admin yang melakukan dan waktu tindakan | Must | TURUNAN | DRAFT |
 
 ## 10. Non-Functional Requirement
 
@@ -170,4 +189,6 @@ Kolom diisi bertahap seiring artefak lain jadi. Kolom kosong adalah pengingat pe
 | FR-WLT-002 | UC-WLT-01 | Proses otomatis | `POST /orders/{id}/accept` | TC-FR-WLT-002-01 |
 | FR-WLT-003 | UC-WLT-02 | Proses otomatis | `POST /orders/{id}/confirm` | TC-FR-WLT-003-01 |
 | FR-HLP-002 | UC-HLP-01 | Cari helper | `GET /helpers` | TC-FR-HLP-002-01 |
-| FR-RTG-002 | UC-RTG-01 | Penilaian | `POST /orders/{id}/rating` | TC-FR-RTG-002-01 |
+| FR-RTG-001 | UC-RTG-01 | Penilaian | `POST /orders/{id}/rating` | TC-FR-RTG-001-01 |
+| FR-ADM-004 | UC-ADM-01 | Panel admin, verifikasi | `POST /admin/verifications/{id}/approve` | TC-FR-ADM-004-01 |
+| FR-ADM-006 | UC-ADM-02 | Panel admin, sengketa | `POST /admin/disputes/{id}/resolve` | TC-FR-ADM-006-01 |

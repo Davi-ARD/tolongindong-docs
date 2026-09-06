@@ -57,6 +57,13 @@ Waktu selalu dikirim dalam format ISO 8601 dengan zona waktu. Mobile tidak boleh
 | API-WLT-01 | `GET /wallet` | Pemilik dompet | Saldo tersedia dan saldo tertahan |
 | API-WLT-02 | `GET /wallet/transactions` | Pemilik dompet | Riwayat mutasi dengan penomoran halaman |
 | API-WLT-03 | `POST /wallet/topup` | Pemilik dompet | Pengisian saldo |
+| API-ADM-01 | `POST /admin/auth/login` | Admin | Login khusus admin, jalur terpisah dari login Client dan Helper. Baru 28 Agu 2026, `DEC-07` |
+| API-ADM-02 | `GET /admin/verifications?status=pending` | Admin | Daftar pengajuan verifikasi identitas yang menunggu peninjauan |
+| API-ADM-03 | `POST /admin/verifications/{id}/approve` | Admin | Menyetujui pengajuan verifikasi |
+| API-ADM-04 | `POST /admin/verifications/{id}/reject` | Admin | Menolak pengajuan verifikasi, wajib menyertakan alasan |
+| API-ADM-05 | `GET /admin/disputes?status=pending` | Admin | Daftar sengketa yang menunggu keputusan, otomatis hanya berisi pesanan kategori Delivery sesuai `DEC-10` |
+| API-ADM-06 | `POST /admin/disputes/{id}/resolve` | Admin | Memutuskan hasil sengketa dan memicu pelepasan atau pengembalian dana sesuai keputusan |
+| API-ADM-07 | `GET /admin/commission-summary` | Admin | Ringkasan agregat komisi platform, dapat disaring rentang tanggal |
 
 ## 3. Rincian endpoint kritis
 
@@ -218,6 +225,52 @@ Header wajib `X-Idempotency-Key`. Server melepas dana tertahan, memotong komisi 
 ```
 
 Angka pada contoh ini menunjukkan bahwa sisa penahanan talangan yang tidak terpakai dikembalikan ke client pada saat penyelesaian, bukan mengendap.
+
+### API-ADM-03 dan API-ADM-06, contoh tindakan admin
+
+Bagian ini baru ditambahkan 28 Agustus 2026, mengikuti `DEC-07`. Belum pernah ditinjau BE, jadi seluruh contoh di bawah berstatus draf pertama.
+
+**Menyetujui verifikasi.** `POST /admin/verifications/{id}/approve`
+
+Header wajib `Authorization: Bearer <admin_access_token>`, token ini didapat dari `API-ADM-01`, terpisah dari token Client dan Helper. Badan permintaan kosong. Server mengubah `verification_request.review_status` jadi `verified`, mengubah `user.id_verification_status` jadi `verified`, mencatat `reviewed_by_admin_id`, dan menambah satu baris di `admin_action_log`.
+
+Respons `200`.
+
+```json
+{
+  "success": true,
+  "message": "Verifikasi disetujui",
+  "data": {
+    "verification_request_id": 118,
+    "user_id": 402,
+    "review_status": "verified",
+    "reviewed_by": { "admin_id": 3, "name": "Admin" }
+  }
+}
+```
+
+**Memutuskan sengketa.** `POST /admin/disputes/{id}/resolve`
+
+```json
+{ "resolution": "favor_helper", "admin_note": "Bukti foto menunjukkan barang diterima sesuai, dana dilepas ke helper" }
+```
+
+Server memeriksa pesanan terkait sengketa ini berkategori Delivery, ini pengecekan wajib mengikuti `DEC-10`, menolak dengan `409 DISPUTE_NOT_ELIGIBLE` kalau kategori bukan Delivery, kasus yang seharusnya tidak pernah terjadi kalau validasi di `API-ORD-018` sudah benar tapi tetap diperiksa ulang di sisi server sebagai pertahanan kedua. Nilai `resolution` yang diperbolehkan `favor_client`, `favor_helper`, atau `split`. Kalau `favor_helper`, server melepas dana tertahan ke helper seperti pada `API-ORD-08`. Kalau `favor_client`, server mengembalikan dana tertahan penuh ke client. Kalau `split`, server butuh field tambahan `split_ratio` yang belum dirancang, ditandai sebagai pekerjaan lanjutan.
+
+Respons `200`.
+
+```json
+{
+  "success": true,
+  "message": "Sengketa diputuskan",
+  "data": {
+    "dispute_id": 12,
+    "order_id": 3110,
+    "resolution": "favor_helper",
+    "resolved_by": { "admin_id": 3, "name": "Admin" }
+  }
+}
+```
 
 ## 4. Catatan untuk Mobile Developer
 
