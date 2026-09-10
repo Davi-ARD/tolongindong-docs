@@ -64,6 +64,8 @@ Waktu selalu dikirim dalam format ISO 8601 dengan zona waktu. Mobile tidak boleh
 | API-ADM-05 | `GET /admin/disputes?status=pending` | Admin | Daftar sengketa yang menunggu keputusan, otomatis hanya berisi pesanan kategori Delivery sesuai `DEC-10` |
 | API-ADM-06 | `POST /admin/disputes/{id}/resolve` | Admin | Memutuskan hasil sengketa dan memicu pelepasan atau pengembalian dana sesuai keputusan |
 | API-ADM-07 | `GET /admin/commission-summary` | Admin | Ringkasan agregat komisi platform, dapat disaring rentang tanggal |
+| API-ADM-08 | `POST /admin/users/{id}/suspend` | Admin | Menonaktifkan akun Client atau Helper, wajib menyertakan alasan. Baru 6 Sep 2026, `FR-ADM-009` |
+| API-ADM-09 | `POST /admin/users/{id}/reactivate` | Admin | Mengaktifkan kembali akun yang disuspend. Baru 6 Sep 2026, `FR-ADM-010` |
 
 ## 3. Rincian endpoint kritis
 

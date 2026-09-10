@@ -28,13 +28,14 @@ Prioritas memakai MoSCoW. Untuk durasi lab, target realistis adalah menyelesaika
 | FR-VER-003 | Sistem harus menyimpan status verifikasi dengan nilai belum diajukan, sedang ditinjau, disetujui, atau ditolak beserta alasan penolakan | Must | TURUNAN | DRAFT |
 | FR-VER-004 | Sistem harus melarang akun yang belum berstatus disetujui untuk menerima pesanan apa pun | Must | TURUNAN | DRAFT |
 | FR-VER-005 | Sistem harus menampilkan lencana helper terverifikasi pada kartu helper di daftar pencarian | Must | PROTO | DRAFT |
+| FR-VER-006 | Sistem harus menahan pengajuan ulang verifikasi selama 2 menit setelah pengajuan sebelumnya ditolak | Must | TURUNAN, BARU 6 Sep 2026 hasil sesi BE. **Catatan SA**: durasi 2 menit perlu dikonfirmasi ulang, terasa sangat pendek untuk siklus peninjauan manual admin, kemungkinan yang dimaksud satuan waktu lain | DRAFT |
 
 ## 3. Modul PRF, profil dan alamat
 
 | Kode | Functional Requirement | Prioritas | Sumber | Status |
 | --- | --- | --- | --- | --- |
 | FR-PRF-001 | Sistem harus menampilkan halaman profil berisi nama, kota, tanggal bergabung, dan status verifikasi | Must | PROTO | DRAFT |
-| FR-PRF-002 | Sistem harus mengizinkan pengguna menyimpan maksimal sepuluh alamat dengan label, koordinat, dan catatan patokan | Must | PROTO | DRAFT |
+| FR-PRF-002 | Sistem harus mengizinkan pengguna menyimpan maksimal sepuluh alamat dengan label, koordinat, dan catatan patokan | Must | TURUNAN, direvisi dari PROTO 6 Sep 2026, usulan SA meratifikasi angka ini sebagai keputusan UX yang disengaja, bukan kebetulan mengikuti prototipe, menunggu konfirmasi tim | DRAFT |
 | FR-PRF-003 | Sistem harus menandai satu alamat sebagai alamat utama yang terpilih otomatis saat membuat pesanan | Should | TURUNAN | DRAFT |
 | FR-PRF-004 | Sistem harus menampilkan lokasi aktif pengguna pada bagian atas beranda | Must | PROTO | DRAFT |
 | FR-PRF-005 | Sistem harus menyediakan menu ubah profil untuk nama, foto, dan nomor telepon dengan verifikasi OTP ulang saat nomor diubah | Should | TURUNAN | DRAFT |
@@ -61,7 +62,7 @@ Modul ini adalah inti sistem. Detail transisi status ada di `04_dual-role-transa
 | Kode | Functional Requirement | Prioritas | Sumber | Status |
 | --- | --- | --- | --- | --- |
 | FR-ORD-001 | Sistem harus menyediakan form pembuatan pesanan berisi kategori, deskripsi tugas, alamat penjemputan, alamat tujuan, waktu pelaksanaan, dan harga estimasi yang diajukan client | Must | TURUNAN | DRAFT |
-| FR-ORD-002 | Sistem harus menghitung rentang biaya acuan sebelum pesanan dikirim, terdiri atas tarif dasar, biaya jarak, biaya layanan, dan potongan voucher, sebagai panduan bagi client menentukan harga estimasi dan bagi helper menyusun tawaran | Must | TURUNAN | DRAFT |
+| FR-ORD-002 | Sistem harus menghitung rentang biaya acuan sebelum pesanan dikirim, terdiri atas tarif dasar, biaya jarak, biaya layanan, dan potongan voucher, sebagai panduan bagi client menentukan harga estimasi dan bagi helper menyusun tawaran. Usulan SA 6 Sep 2026, `service_fee` dihitung flat sama dengan `SERVICE_CATEGORY.base_fee`, tidak dikalikan durasi, karena angka ini cuma panduan, harga final tetap dari tawaran bebas helper (DEC-05). Menunggu konfirmasi tim | Must | TURUNAN | DRAFT |
 | FR-ORD-003 | Sistem harus menyiarkan pesanan ke helper yang memenuhi syarat kategori dan radius, dan mengizinkan setiap helper yang berminat mengajukan tawaran harga masing masing berbeda dari harga estimasi client | Must | TURUNAN, DIREVISI 19 Agu 2026 (DEC-05) | DRAFT |
 | FR-ORD-003B | Sistem harus menampilkan seluruh tawaran harga yang masuk kepada client, masing masing beserta profil helper, rating, dan nominal yang diajukan, agar client dapat membandingkan sebelum memilih | Must | TURUNAN, BARU (DEC-05) | DRAFT |
 | FR-ORD-003C | Sistem harus mengizinkan client memilih satu tawaran dari daftar yang masuk, dan pilihan ini yang memicu penahanan dana serta penolakan otomatis terhadap tawaran lain | Must | TURUNAN, BARU (DEC-05) | DRAFT |
@@ -138,7 +139,7 @@ Catatan revisi 28 Agustus 2026, `DEC-09`. Modul ini semula bernama "penilaian du
 
 Modul baru, ditambahkan 28 Agustus 2026 mengikuti `DEC-07` yang sudah final, Mentor mengakses lewat panel admin sungguhan di dalam sistem, bukan proses manual. Ini menambah lingkup baru yang sebelumnya tidak ada di manapun pada workspace, jadi seluruh isi modul ini berstatus `DRAFT` dan `ASUMSI` sampai ditinjau ulang bersama BE, karena rancangannya baru pertama kali ditulis di sini.
 
-Cakupan modul ini sengaja diminimalkan sesuai kebutuhan yang sudah teridentifikasi, verifikasi identitas Helper dan penyelesaian sengketa, ditambah satu kebutuhan yang muncul dari diskusi soal komisi, yaitu ringkasan agregat komisi platform untuk kepentingan stakeholder. Fitur manajemen pengguna umum, seperti menonaktifkan akun Client atau Helper, sengaja belum dimasukkan karena belum pernah dibahas eksplisit dengan tim, dan lebih baik ditambahkan lewat keputusan baru daripada saya asumsikan sendiri.
+Cakupan modul ini mencakup verifikasi identitas Helper, penyelesaian sengketa, ringkasan agregat komisi platform, dan sejak 6 September 2026 juga suspend akun Client atau Helper secara umum, dikonfirmasi lewat sesi BE (`FR-ADM-009`, `FR-ADM-010`). Ini menjawab celah yang tadinya sengaja saya kosongkan karena belum dibahas eksplisit dengan tim.
 
 | Kode | Functional Requirement | Prioritas | Sumber | Status |
 | --- | --- | --- | --- | --- |
@@ -150,6 +151,8 @@ Cakupan modul ini sengaja diminimalkan sesuai kebutuhan yang sudah teridentifika
 | FR-ADM-006 | Sistem harus mengizinkan admin memutuskan hasil sengketa dengan tiga pilihan, berpihak client, berpihak helper, atau dibagi, dan mewajibkan catatan keputusan diisi | Must | TURUNAN | DRAFT |
 | FR-ADM-007 | Sistem harus menampilkan ringkasan agregat komisi platform yang terkumpul kepada admin, dapat disaring berdasarkan rentang tanggal | Should | TURUNAN | DRAFT |
 | FR-ADM-008 | Sistem harus mencatat setiap tindakan admin (persetujuan verifikasi, penolakan, keputusan sengketa) beserta identitas admin yang melakukan dan waktu tindakan | Must | TURUNAN | DRAFT |
+| FR-ADM-009 | Sistem harus mengizinkan admin menonaktifkan (suspend) akun Client atau Helper, dengan alasan wajib diisi, dan mencegah akun yang di-suspend melakukan aksi apa pun sampai diaktifkan kembali | Must | TURUNAN, BARU 6 Sep 2026 hasil sesi BE | DRAFT |
+| FR-ADM-010 | Sistem harus mengizinkan admin mengaktifkan kembali akun yang di-suspend | Must | TURUNAN, BARU 6 Sep 2026 hasil sesi BE | DRAFT |
 
 ## 10. Non-Functional Requirement
 
@@ -162,7 +165,7 @@ Kategori mengacu pada ISO 25010. Setiap NFR ditulis dengan angka supaya QA bisa 
 | NFR-PERF-03 | Perubahan status pesanan tampil di perangkat lawan bicara dalam waktu tidak lebih dari 5 detik | Performance Efficiency | Uji dua perangkat berdampingan |
 | NFR-SEC-01 | Kata sandi disimpan dalam bentuk hash dengan algoritma bcrypt faktor kerja minimal 12 | Security | Inspeksi basis data |
 | NFR-SEC-02 | Seluruh komunikasi antara aplikasi dan server memakai HTTPS dengan TLS 1.2 atau lebih baru | Security | Inspeksi konfigurasi server |
-| NFR-SEC-03 | Foto kartu identitas hanya dapat diakses oleh admin operasional dan tidak pernah dikembalikan pada endpoint publik | Security | Uji akses tidak sah |
+| NFR-SEC-03 | Foto kartu identitas disimpan di bucket privat (Cloudflare R2) dan hanya dapat diakses lewat signed URL berumur pendek yang dibuat backend untuk admin operasional, tidak pernah dikembalikan pada endpoint publik | Security | Uji akses tidak sah. Enkripsi at-rest tambahan di luar isolasi bucket masih jadi pertanyaan terbuka untuk sesi BE, lihat `05_erd-draft.md` bagian 3B |
 | NFR-SEC-04 | Nomor telepon lawan bicara ditampilkan tersamar kecuali pada pesanan yang sedang berjalan | Security | Uji tampilan |
 | NFR-REL-01 | Ketersediaan layanan minimal 99 persen dalam periode pengujian | Reliability | Pemantauan uptime |
 | NFR-REL-02 | Tidak boleh ada selisih antara total saldo pengguna dan total mutasi ledger pada rekonsiliasi harian | Reliability | Skrip rekonsiliasi otomatis |
