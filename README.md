@@ -23,7 +23,10 @@ tolongindong-docs/
 ├── 06_api-contract-draft.md                  <- kontrak API untuk BE dan Mobile
 ├── 07_acceptance-criteria-gherkin.md         <- kriteria penerimaan untuk QA
 ├── 08_alur-kerja-dan-pemetaan-divisi.md       <- alur kerja SA dan siapa kasih input ke siapa, untuk disebar ke tim
-└── 09_dokumentasi-keputusan-minggu-1.md       <- catatan lima keputusan hasil sesi 19 Agustus dan dampaknya
+├── 09_dokumentasi-keputusan-minggu-1.md       <- catatan lima keputusan hasil sesi 19 Agustus dan dampaknya
+├── 10_notulen-sinkronisasi-erd-final.md      <- 12 jawaban Mentor dan keputusan T-01 sampai T-12 (DEC-14 sampai DEC-24)
+├── 11_skenario-pengguna.md                   <- naskah alur pengguna end to end untuk UI/UX dan QA
+└── 12_class-diagram.md                       <- class diagram model domain dan service layer
 ```
 
 Struktur penyimpanan tim di Google Drive:
@@ -52,13 +55,13 @@ Aturan versi: `v0.x` berarti draf yang masih boleh berubah tanpa pemberitahuan, 
 | Non-Functional Requirement | `NFR-<KATEGORI>-<NN>` | `NFR-PERF-02` |
 | Use Case | `UC-<MODUL>-<NN>` | `UC-ORD-03` |
 | Aktor | `ACT-<NN>` | `ACT-02` |
-| Entitas basis data | `snake_case` tunggal | `order_item` |
+| Entitas basis data | Diagram: huruf besar tunggal. Tabel fisik: `snake_case` jamak mengikuti Laravel (DEC-16) | `ORDER_OFFER` menjadi `order_offers` |
 | Endpoint API | `API-<MODUL>-<NN>` | `API-WLT-05` |
 | Test Case | `TC-<KODE FR>-<NN>` | `TC-FR-ORD-004-01` |
 | Keputusan desain | `DEC-<NN>` | `DEC-01` |
 | Risiko | `RSK-<NN>` | `RSK-03` |
 
-Kode modul yang dipakai: `AUTH` autentikasi dan akun, `VER` verifikasi identitas, `PRF` profil dan alamat, `HLP` pencarian serta pendaftaran helper, `ORD` siklus hidup pesanan, `WLT` dompet dan pembayaran, `CHT` percakapan, `RTG` penilaian dua arah, `NOT` notifikasi, `DSP` sengketa.
+Kode modul yang dipakai: `AUTH` autentikasi dan akun, `VER` verifikasi identitas, `PRF` profil dan alamat, `HLP` pencarian serta pendaftaran helper, `ORD` siklus hidup pesanan termasuk pengajuan sengketa, `WLT` dompet, pembayaran, dan voucher, `CHT` percakapan, `RTG` penilaian satu arah, `NOT` notifikasi, `ADM` panel admin. Kode `DSP` tidak dipakai, sengketa tercakup di `ORD` (pengajuan) dan `ADM` (keputusan).
 
 Nomor urut tidak pernah dipakai ulang. Kalau satu FR dihapus, nomornya dipensiunkan dan ditandai `DEPRECATED`, tidak diberikan ke requirement baru. Ini mencegah kekacauan waktu QA membuka test case lama.
 
@@ -91,9 +94,9 @@ Alur kerja SA sembilan langkah dari materi lab dipetakan ke rencana eksekusi sep
 | 1 | Kick-off dan identifikasi stakeholder | `01_stakeholder-register-glossary.md` | Selesai |
 | 2 | Requirement elicitation | catatan diskusi tim, hasil review prototipe | Selesai |
 | 3 | Analysis dan validation | `04_dual-role-transaction-analysis.md` | Selesai |
-| 4 | Requirement documentation | `02_requirement-master-list.md`, SRS bab 1 sampai 3 | Minggu ini sampai minggu depan |
-| 5 | Verifikasi ke stakeholder | sesi review bersama Mentor dan lintas divisi | Belum ditargetkan |
-| 6 | Modelling | `03_use-case-inventory.md`, `05_erd-draft.md`, activity dan class diagram | Minggu ini atau depan |
+| 4 | Requirement documentation | `02_requirement-master-list.md` v0.2, SRS bab 1 sampai 3 | Master list selesai, SRS v0.3 berikutnya |
+| 5 | Verifikasi ke stakeholder | `10_notulen-sinkronisasi-erd-final.md`, jawaban 12 pertanyaan Mentor | Selesai 28 Sep 2026 |
+| 6 | Modelling | `03_use-case-inventory.md`, `05_erd-draft.md` v0.3, `12_class-diagram.md`, activity diagram | Class diagram selesai 28 Sep 2026, activity diagram berikutnya |
 | 7 | Handover ke Design dan Dev | `06_api-contract-draft.md`, SDD bab 1 sampai 3 | Setelah modelling stabil |
 | 8 | Monitoring development | log perubahan requirement dan dampaknya | Berjalan |
 | 9 | Support UAT | `07_acceptance-criteria-gherkin.md` | Menjelang UAT |
@@ -123,10 +126,21 @@ Keputusan yang mengubah arah desain dicatat di sini supaya tidak diulang perdeba
 | DEC-07 | Mentor lab berperan sebagai admin operasional untuk verifikasi identitas helper dan penyelesaian sengketa, mengakses lewat panel admin sungguhan di dalam sistem | Disetujui | Hasil sesi sinkronisasi 19 Agustus, mekanisme akses dikonfirmasi 28 Agustus. Konsekuensi: modul ADM baru ditambahkan ke `02_requirement-master-list.md`, `05_erd-draft.md`, dan `06_api-contract-draft.md` | 19 Agu 2026 |
 | DEC-08 | Besaran potongan platform ditetapkan 10 persen dari nominal yang diterima helper | Disetujui | Dikonfirmasi 28 Agustus. Rekomendasi dan alasannya ada di `09_dokumentasi-keputusan-minggu-1.md` | 19 Agu 2026 |
 | DEC-09 | Penilaian dihapus dari dua arah menjadi satu arah, hanya Client menilai Helper. FR-RTG-002 dinyatakan DEPRECATED | Disetujui | Hasil diskusi SA dengan UI/UX 28 Agustus. Menggantikan DEC-03. Konsekuensi: argumen SDG 8 soal "perlindungan dari penilaian sepihak" pada `01_stakeholder-register-glossary.md` bagian 5 ikut direvisi karena mekanisme yang mendasarinya sudah tidak ada | 28 Agu 2026 |
-| DEC-10 | Kanal sengketa (FR-ORD-018) dibatasi hanya untuk pesanan berkategori Delivery | Disetujui, dengan satu inkonsistensi belum terjawab | Hasil diskusi SA dengan UI/UX 28 Agustus. Belum jelas bagaimana perlakuan terhadap jalur `PRICE_ADJUSTMENT --> DISPUTED` pada kategori Food run yang sudah dirancang lebih dulu, lihat pertanyaan terbuka di `04_dual-role-transaction-analysis.md` bagian empat | 28 Agu 2026 |
+| DEC-10 | Kanal sengketa (FR-ORD-018) dibatasi hanya untuk pesanan berkategori Delivery | Disetujui, inkonsistensi Food run ditutup lewat DEC-20 | Hasil diskusi SA dengan UI/UX 28 Agustus. Jalur `PRICE_ADJUSTMENT --> DISPUTED` pada Food run dihapus 28 September | 28 Agu 2026 |
 | DEC-11 | Teknologi ditetapkan: Backend Laravel (PHP), Mobile Flutter, Database Supabase (lapis PostgreSQL saja, bukan Auth atau REST bawaan), Autentikasi Laravel Sanctum, Storage foto Cloudflare R2 dengan bucket terpisah publik dan privat | Dikonfirmasi (keputusan teknis BE) | Dilaporkan Kai (Backend) lewat `tolongindong-erd-review.md`. Menjawab pertanyaan lama soal stack yang belum ditetapkan | 6 Sep 2026 |
-| DEC-12 | Enam dari dua belas pertanyaan terbuka ERD terjawab lewat sesi BE: enkripsi foto KTP tidak perlu (private bucket cukup), enkripsi nomor telepon tidak perlu, voucher dipotong dari komisi platform, voucher boleh ditumpuk, cooldown verifikasi 2 menit, admin butuh fitur suspend akun | Disetujui, satu catatan perlu dicek ulang | Rincian lengkap di `05_erd-draft.md` bagian 3B. Cooldown 2 menit ditandai SA sebagai kemungkinan salah dengar satuan waktu, perlu konfirmasi ulang sebelum dianggap final | 6 Sep 2026 |
-| DEC-13 | Enam pertanyaan ERD sisanya (itemisasi order, kardinalitas penyesuaian harga, definisi kategori, rumus tarif jasa, batas alamat, chat sebelum pesanan) belum dibahas tim, SA memberi rekomendasi awal untuk masing masing | Usulan SA, menunggu konfirmasi tim | Rincian dan alasan tiap rekomendasi di `05_erd-draft.md` bagian 3B. Empat di antaranya (itemisasi, kategori, batas alamat, chat) sengaja tidak diputuskan sendiri oleh SA karena berdampak ke lingkup produk, bukan cuma teknis | 6 Sep 2026 |
+| DEC-12 | Enam dari dua belas pertanyaan terbuka ERD terjawab lewat sesi BE: enkripsi foto KTP tidak perlu, enkripsi nomor telepon tidak perlu, voucher dipotong dari komisi platform, voucher boleh ditumpuk, cooldown verifikasi 2 menit, admin butuh fitur suspend akun | Sebagian digantikan oleh DEC-14 | Poin voucher bertumpuk dan cooldown 2 menit dibatalkan Mentor. Poin lain tetap berlaku dengan penyempurnaan di DEC-14 | 6 Sep 2026 |
+| DEC-13 | Enam pertanyaan ERD sisanya (itemisasi order, kardinalitas penyesuaian harga, definisi kategori, rumus tarif jasa, batas alamat, chat sebelum pesanan) mendapat rekomendasi awal SA | Terjawab oleh DEC-14 | Seluruh rekomendasi SA disetujui Mentor, dengan tambahan aturan satu penyesuaian pending dan direct booking tetap memakai quote | 6 Sep 2026 |
+| DEC-14 | Mentor menjawab dua belas pertanyaan terbuka ERD: tanpa `ORDER_ITEM`, penyesuaian harga 0..N dengan maksimal satu pending, definisi kategori, `service_fee` flat dan direct booking memakai quote, subsidi voucher maksimal sebesar komisi, satu voucher per order, cooldown verifikasi dihapus, foto KTP tanpa enkripsi tambahan, batas 10 alamat sebagai business rule, chat hanya setelah order, nomor telepon tanpa enkripsi dengan masking, suspend diblokir order aktif | Disetujui | Rincian di `10_notulen-sinkronisasi-erd-final.md` bagian 2. Menggantikan sebagian DEC-12 dan menjawab DEC-13 | 28 Sep 2026 |
+| DEC-15 | Empat konsep uang dipisah: `total_amount`, `service_client_charge`, `held_amount`, `advance_actual`. Voucher hanya mengurangi tagihan client dan komisi bersih, tidak pernah upah helper. Komisi dibulatkan ke bawah | Disetujui (BE, diperluas tim) | Memperbaiki rumus `erd_final.md` yang mencairkan dana melebihi dana tertahan. Notulen T-01 | 28 Sep 2026 |
+| DEC-16 | Penyelarasan skema: enum final termasuk `pending_confirmation` dan `awaiting_quote`, tabel `ORDER_ATTACHMENT`, tabel fisik `orders`, pivot kategori helper, status suspend hanya di `user`, label lokasi pengerjaan | Disetujui (BE) | Notulen T-02 sampai T-04 | 28 Sep 2026 |
+| DEC-17 | Food run memisahkan upah jasa dari uang belanja. Client menyediakan batas talangan, komisi hanya dari upah, helper dengan `max_advance_limit` di bawah batas pesanan tidak melihat pesanan | Disetujui | Notulen T-05. `scenario.md` ditulis ulang menjadi `11_skenario-pengguna.md` | 28 Sep 2026 |
+| DEC-18 | Laundry adalah jasa jemput dan antar ke penyedia laundry dengan talangan. Personal mendapat lima larangan termasuk pekerjaan berbahaya | Disetujui | Notulen T-06 | 28 Sep 2026 |
+| DEC-19 | Aturan pembatalan final: gratis sampai 120 detik setelah diterima, lalu Rp 5.000, lalu 25 persen harga jasa saat helper berangkat, tidak bisa batal sepihak saat dikerjakan. Voucher kembali kalau gratis, hangus kalau kena penalti. Kompensasi tanpa komisi. Talangan hanya dijamin kalau sah dan dalam batas | Disetujui | Notulen T-07 | 28 Sep 2026 |
+| DEC-20 | Jalur sengketa Food run dihapus. Penolakan penyesuaian talangan mengembalikan pesanan ke `in_progress`, belanja di atas batas tidak dijamin tanpa persetujuan client | Disetujui | Notulen T-08. Menutup inkonsistensi DEC-10 | 28 Sep 2026 |
+| DEC-21 | Direct booking: helper memberi quote dalam 300 detik, quote berlaku 300 detik, dana ditahan saat client setuju tanpa konfirmasi 60 detik, tanpa counter-offer, gagal berarti tombol siarkan ke helper lain | Disetujui | Notulen T-09 | 28 Sep 2026 |
+| DEC-22 | Suspend diblokir oleh pesanan `pending_confirmation` sampai `awaiting_confirmation` dan `disputed`. Admin boleh membatalkan pesanan aktif selain `disputed`, dana jasa kembali ke client, talangan sah tetap diganti ke helper, tanpa split | Disetujui | Notulen T-10 | 28 Sep 2026 |
+| DEC-23 | Voucher divalidasi keras saat dibuat admin, dicek terhadap quote terpilih, manajemen voucher berprioritas Should dan demo boleh memakai data seed | Disetujui | Notulen T-11 | 28 Sep 2026 |
+| DEC-24 | Keputusan sengketa split membagi dana tertahan 50:50 tanpa komisi platform. Foto penjemputan wajib untuk Delivery | Disetujui | Notulen T-12 | 28 Sep 2026 |
 
 ## 10. Risiko yang sedang dipantau
 
@@ -135,3 +149,4 @@ Keputusan yang mengubah arah desain dicatat di sini supaya tidak diulang perdeba
 | RSK-01 | Lingkup terlalu besar untuk durasi lab, terutama fitur peta waktu nyata dan dompet | Tinggi | Tetapkan MoSCoW sejak awal, jadikan pelacakan peta sebagai simulasi status, bukan GPS penuh |
 | RSK-02 | Prototipe UI belum punya layar untuk sebagian alur penting seperti pembuatan pesanan dan sengketa | Sedang | Daftar gap sudah disiapkan di `03_use-case-inventory.md` untuk dibahas dengan UI/UX |
 | RSK-03 | Uang sungguhan tidak boleh dipakai di lingkungan lab | Sedang | Dompet berjalan dalam mode simulasi dengan saldo dummy, dinyatakan eksplisit di batasan SRS |
+| RSK-04 | Sebelas turunan SA di `05_erd-draft.md` bagian 7 belum dikonfirmasi BE, dan BE bisa mulai migrasi dari `erd_final.md` versi lama | Sedang | Kai meninjau bagian 7 sebelum migrasi pertama. `erd_final.md` dianggap digantikan oleh `05_erd-draft.md` v0.3 |

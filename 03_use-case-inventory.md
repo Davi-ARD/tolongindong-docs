@@ -1,6 +1,6 @@
 # Use Case Inventory dan Inventaris Layar
 
-Status dokumen: `REVIEW` v0.1
+Status dokumen: `REVIEW` v0.2, 28 September 2026. Perubahan v0.2: lima use case baru mengikuti DEC-21 sampai DEC-23, penyesuaian UC-ORD-02B dengan rumus penahanan DEC-15, dan satu use case scenario baru untuk direct booking.
 
 ## 1. Aktor
 
@@ -18,20 +18,22 @@ Status dokumen: `REVIEW` v0.1
 | UC-AUTH-01 | Registrasi akun | Client | FR-AUTH-001, 002, 003 |
 | UC-AUTH-02 | Login | Client, Helper | FR-AUTH-004, 005, 007 |
 | UC-AUTH-03 | Lupa kata sandi | Client, Helper | FR-AUTH-006 |
-| UC-VER-01 | Mengajukan verifikasi identitas | Client | FR-VER-002, 003 |
+| UC-VER-01 | Mengajukan verifikasi identitas | Client | FR-VER-002, 003, 007 |
 | UC-HLP-01 | Mencari dan menyaring helper | Client | FR-HLP-002, 003, 004, 005 |
 | UC-HLP-02 | Mendaftar menjadi helper | Client | FR-HLP-007, 008, FR-VER-002 |
 | UC-HLP-03 | Mengatur ketersediaan | Helper | FR-HLP-009 |
-| UC-ORD-01 | Membuat pesanan dengan harga estimasi | Client | FR-ORD-001, 002, 003 |
-| UC-ORD-02 | Mengajukan tawaran harga | Helper | FR-ORD-003, 006, 016 |
-| UC-ORD-02B | Memilih tawaran dari daftar helper | Client | FR-ORD-003B, 003C |
-| UC-ORD-02C | Mengonfirmasi ketersediaan setelah terpilih | Helper | FR-ORD-006B |
-| UC-ORD-03 | Memperbarui progres pekerjaan | Helper | FR-ORD-009, 013 |
+| UC-ORD-01 | Membuat pesanan dengan harga estimasi dan batas talangan | Client | FR-ORD-001, 002, 003, 022 |
+| UC-ORD-02 | Mengajukan tawaran harga | Helper | FR-ORD-003, 006, 016, 020 |
+| UC-ORD-02B | Memilih tawaran dari daftar helper | Client | FR-ORD-003B, 003C, FR-WLT-011, 012, 013 |
+| UC-ORD-02C | Mengonfirmasi ketersediaan setelah terpilih, khusus broadcast | Helper | FR-ORD-006B, FR-WLT-002 |
+| UC-ORD-03 | Memperbarui progres pekerjaan dan mengunggah foto bukti | Helper | FR-ORD-009, 013, 021 |
 | UC-ORD-04 | Memantau pesanan berjalan | Client | FR-ORD-007, 008 |
-| UC-ORD-05 | Mengonfirmasi pesanan selesai | Client, Sistem | FR-ORD-010, 012 |
-| UC-ORD-06 | Mengajukan penyesuaian harga talangan | Helper | FR-ORD-014 |
-| UC-ORD-07 | Membatalkan pesanan | Client, Helper | FR-ORD-011 |
+| UC-ORD-05 | Mengonfirmasi pesanan selesai | Client, Sistem | FR-ORD-010, 012, FR-WLT-003 |
+| UC-ORD-06 | Mengunggah struk dan mengajukan penyesuaian talangan, Food run dan Laundry | Helper, Client | FR-ORD-014, 019 |
+| UC-ORD-07 | Membatalkan pesanan | Client, Helper | FR-ORD-011, 023, FR-WLT-014 |
 | UC-ORD-08 | Mengajukan sengketa, khusus pesanan kategori Delivery (DEC-10) | Client, Helper | FR-ORD-018 |
+| UC-ORD-09 | Memesan langsung ke helper tertentu dan menyetujui quote | Client | FR-ORD-003D, 020, FR-WLT-002 |
+| UC-ORD-09B | Memberi atau menolak quote direct booking | Helper | FR-ORD-003D, 006 |
 | UC-WLT-01 | Mengisi saldo | Client | FR-WLT-006 |
 | UC-WLT-02 | Melihat riwayat mutasi saldo | Client, Helper | FR-WLT-005 |
 | UC-WLT-03 | Menarik pendapatan | Helper | FR-WLT-007 |
@@ -41,6 +43,9 @@ Status dokumen: `REVIEW` v0.1
 | UC-ADM-01 | Meninjau dan memutuskan pengajuan verifikasi identitas | Admin operasional | FR-ADM-003, 004 |
 | UC-ADM-02 | Meninjau dan memutuskan sengketa | Admin operasional | FR-ADM-005, 006 |
 | UC-ADM-03 | Melihat ringkasan agregat komisi | Admin operasional | FR-ADM-007 |
+| UC-ADM-04 | Menonaktifkan dan mengaktifkan kembali akun | Admin operasional | FR-ADM-009, 010 |
+| UC-ADM-05 | Membatalkan pesanan aktif | Admin operasional | FR-ADM-011 |
+| UC-ADM-06 | Mengelola voucher | Admin operasional | FR-ADM-012 |
 
 ## 3. Peta relasi aktor dan use case
 
@@ -49,6 +54,7 @@ flowchart LR
     C(["Client"])
     H(["Helper"])
     S(["Sistem"])
+    A(["Admin"])
 
     subgraph Akun
         UC1["UC-AUTH-01 Registrasi"]
@@ -59,11 +65,22 @@ flowchart LR
 
     subgraph Pesanan
         UC5["UC-ORD-01 Buat pesanan"]
-        UC6["UC-ORD-02 Terima tawaran"]
+        UC6["UC-ORD-02 Ajukan tawaran"]
         UC7["UC-ORD-03 Perbarui progres"]
         UC8["UC-ORD-05 Konfirmasi selesai"]
         UC9["UC-ORD-06 Penyesuaian harga"]
         UC10["UC-ORD-07 Batalkan pesanan"]
+        UC16["UC-ORD-09 Pesan langsung"]
+        UC17["UC-ORD-09B Beri quote"]
+        UC18["UC-ORD-08 Sengketa Delivery"]
+    end
+
+    subgraph Admin
+        UC19["UC-ADM-01 Verifikasi"]
+        UC20["UC-ADM-02 Putuskan sengketa"]
+        UC21["UC-ADM-04 Suspend akun"]
+        UC22["UC-ADM-05 Batalkan pesanan"]
+        UC23["UC-ADM-06 Kelola voucher"]
     end
 
     subgraph Dompet
@@ -77,13 +94,18 @@ flowchart LR
         UC15["UC-RTG-01 Penilaian satu arah"]
     end
 
-    C --> UC1 & UC2 & UC3 & UC5 & UC8 & UC10 & UC11 & UC14 & UC15
-    H --> UC2 & UC4 & UC6 & UC7 & UC9 & UC10 & UC12 & UC14
+    C --> UC1 & UC2 & UC3 & UC5 & UC8 & UC10 & UC11 & UC14 & UC15 & UC16 & UC18
+    H --> UC2 & UC4 & UC6 & UC7 & UC9 & UC10 & UC12 & UC14 & UC17 & UC18
     S --> UC13
+    A --> UC19 & UC20 & UC21 & UC22 & UC23
     UC3 -.include.-> UC4
     UC6 -.include.-> UC13
     UC8 -.include.-> UC13
     UC9 -.extend.-> UC7
+    UC16 -.include.-> UC13
+    UC20 -.include.-> UC13
+    UC22 -.include.-> UC13
+    UC21 -.extend.-> UC22
 ```
 
 Catatan untuk SRS: diagram di atas dipakai sebagai bahan, tetapi versi resmi di SRS sebaiknya digambar dengan notasi UML use case yang benar memakai draw.io atau Lucidchart, lengkap dengan batas sistem serta relasi include dan extend.
@@ -126,6 +148,8 @@ Terakhir, verifikasi identitas hanya muncul sebagai lencana. Layar unggah kartu 
 
 Satu tambahan baru di luar tujuh poin di atas: layar pelacakan yang sudah ada di prototipe (poin peta dengan ETA langsung) perlu **digambar ulang**, dikonfirmasi 28 Agustus 2026 tidak ada perubahan dari keputusan `DEC-06` sebelumnya, tetap memakai visualisasi tahapan status, bukan peta real time.
 
+Tambahan 28 September 2026 dari keputusan sinkronisasi. Layar berikut belum ada di prototipe dan dibutuhkan oleh FR baru: layar quote direct booking di sisi helper dan client (FR-ORD-003D), field batas talangan dan daftar larangan Personal di form pembuatan pesanan (FR-ORD-001, FR-ORD-022), unggah foto penjemputan Delivery dan unggah struk dengan sisa batas talangan (FR-ORD-021, FR-ORD-014), pratinjau rincian pembatalan (FR-ORD-011), serta tiga halaman panel admin untuk suspend akun, pembatalan pesanan, dan manajemen voucher (FR-ADM-009, FR-ADM-011, FR-ADM-012). Label "Lokasi pengerjaan" dipakai pada Personal dan Household.
+
 ## 6. Templat use case scenario
 
 Semua use case ditulis memakai templat berikut supaya seragam antara SRS dan SDD. Isi di bawah sudah diperbarui 19 Agustus 2026 mengikuti `DEC-05`, model tawar harga dua arah. Skenario ini menggantikan model penerimaan tawaran tunggal yang sebelumnya jadi contoh di versi draf pertama.
@@ -165,18 +189,18 @@ Skenario alternatif dan eksepsi
 | --- | --- |
 | Deskripsi | Client meninjau seluruh tawaran yang masuk dan memilih satu helper. Pilihan ini memicu konfirmasi ulang ke helper, lalu penahanan dana |
 | Aktor | Client |
-| Kode FR | FR-ORD-003B, FR-ORD-003C, FR-ORD-006B, FR-WLT-002 |
+| Kode FR | FR-ORD-003B, FR-ORD-003C, FR-ORD-006B, FR-WLT-002, FR-WLT-011, FR-WLT-013 |
 | Pra Kondisi | Ada minimal satu tawaran masuk pada pesanan tersebut |
-| Pasca Kondisi | Status pesanan menjadi diterima, dana client tertahan sebesar nominal tawaran terpilih, tawaran lain ditandai tidak terpilih |
+| Pasca Kondisi | Status pesanan menjadi diterima, dana client tertahan sebesar harga tawaran setelah voucher ditambah batas talangan, tawaran lain ditandai tidak terpilih |
 
 Skenario utama
 
 | Langkah | Aktor | Sistem |
 | --- | --- | --- |
 | 1 | Client membuka daftar tawaran | Menampilkan setiap tawaran beserta profil helper, rating, jumlah pesanan selesai, dan nominal |
-| 2 | Client memilih satu tawaran | Mengirim permintaan konfirmasi ke helper terpilih dengan batas waktu 60 detik |
-| 3 | Helper mengonfirmasi masih tersedia | Memeriksa saldo client mencukupi nominal tawaran terpilih |
-| 4 | | Menahan dana client sebesar nominal tawaran, mengubah status pesanan menjadi diterima |
+| 2 | Client memilih satu tawaran | Memeriksa syarat voucher terhadap harga tawaran itu, menampilkan total yang akan ditahan, lalu mengirim permintaan konfirmasi ke helper terpilih dengan batas waktu 60 detik |
+| 3 | Helper mengonfirmasi masih tersedia | Memeriksa saldo client mencukupi harga tawaran setelah voucher ditambah batas talangan |
+| 4 | | Menahan dana client sebesar jumlah tersebut, mengubah status pesanan menjadi diterima |
 | 5 | | Menandai seluruh tawaran lain pada pesanan itu sebagai tidak terpilih dan mengirim notifikasi penutupan ke helper yang tidak terpilih |
 | 6 | | Menampilkan halaman pekerjaan berjalan pada helper terpilih dan halaman pelacakan pada client |
 
@@ -188,3 +212,37 @@ Skenario alternatif dan eksepsi
 | E2 | Helper terpilih sudah mengambil pesanan lain sebelum sempat konfirmasi | Menolak dengan kode konflik, mengembalikan client ke daftar tawaran |
 | E3 | Saldo client tidak mencukupi saat penahanan dana | Membatalkan pemilihan, memberi tahu client untuk mengisi saldo, tawaran tetap tersimpan untuk dipilih ulang setelah saldo cukup |
 | E4 | Permintaan pemilihan dikirim ulang karena jaringan buruk | Idempotency key yang sama mengembalikan hasil pemilihan pertama, tidak ada penahanan dana ganda |
+| A1 | Voucher tidak memenuhi syarat terhadap harga tawaran yang dipilih | Pemilihan tetap berjalan tanpa voucher, client diberi tahu, voucher tetap tersimpan |
+
+### UC-ORD-09, memesan langsung ke helper tertentu
+
+Baru 28 September 2026 mengikuti DEC-21. Use case ini dipasangkan dengan UC-ORD-09B di sisi helper.
+
+| Bagian | Isi |
+| --- | --- |
+| Deskripsi | Client memilih satu helper dari halaman cari helper, helper memberi quote upah jasa, client menyetujui quote, dan dana langsung ditahan |
+| Aktor | Client, dengan Helper sebagai aktor pendukung |
+| Kode FR | FR-ORD-003D, FR-ORD-020, FR-WLT-002, FR-WLT-011 |
+| Pra Kondisi | Helper tujuan terverifikasi, ketersediaan aktif, tidak memegang pesanan aktif, dan batas talangan maksimalnya tidak kurang dari batas talangan pesanan |
+| Pasca Kondisi | Status pesanan diterima, dana client tertahan, atau pesanan kedaluwarsa tanpa dana berpindah |
+
+Skenario utama
+
+| Langkah | Aktor | Sistem |
+| --- | --- | --- |
+| 1 | Client membuka profil helper dan menekan pesan langsung | Memeriksa helper masih memenuhi pra kondisi, menampilkan form pembuatan pesanan |
+| 2 | Client mengisi form dan mengirim | Membuat pesanan berjenis direct berstatus awaiting_quote, membuat satu baris tawaran untuk helper itu, mengirim notifikasi ke helper dengan batas 300 detik |
+| 3 | Helper mengisi quote upah jasa | Menampilkan upah bersih helper, menyimpan quote dengan masa berlaku 300 detik, memberi tahu client |
+| 4 | Client membuka quote | Memeriksa syarat voucher terhadap quote, menampilkan total yang akan ditahan |
+| 5 | Client menekan setuju dan bayar | Menahan dana tanpa konfirmasi ulang helper, mengubah status pesanan menjadi diterima, membuka ruang percakapan |
+
+Skenario alternatif dan eksepsi
+
+| Kode | Kondisi | Perilaku sistem |
+| --- | --- | --- |
+| E1 | Helper tidak memberi quote dalam 300 detik | Status pesanan menjadi expired, client ditawari tombol siarkan ke helper lain |
+| E2 | Helper menolak permintaan | Tawaran menjadi declined, pesanan expired, client ditawari tombol siarkan ke helper lain |
+| E3 | Client menyetujui setelah quote lewat 300 detik | Menolak dengan kode QUOTE_EXPIRED, pesanan expired |
+| E4 | Saldo client tidak cukup saat menyetujui | Menolak dengan kode WALLET_INSUFFICIENT_BALANCE, quote tetap berlaku sampai masa berlakunya habis sehingga client bisa mengisi saldo |
+| E5 | Client menekan siarkan ke helper lain | Membuat pesanan broadcast baru dengan data yang sama, pesanan lama tetap expired |
+| A1 | Client ingin menawar balik quote | Tidak tersedia pada versi ini, client hanya bisa menyetujui atau membiarkan quote kedaluwarsa |

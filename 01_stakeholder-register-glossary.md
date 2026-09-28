@@ -1,6 +1,6 @@
 # Stakeholder Register dan Glosarium
 
-Status dokumen: `CONFIRMED` v0.1
+Status dokumen: `CONFIRMED` v0.2, 28 September 2026. Glosarium diperbarui mengikuti DEC-14 nomor 3 dan DEC-15 sampai DEC-21.
 
 ## 1. Stakeholder pengguna
 
@@ -11,7 +11,7 @@ Ini pihak yang memakai sistem secara langsung dan menjadi aktor di use case.
 | ACT-01 | Client (pemesan) | Membuat permintaan bantuan, membayar, menilai helper | Bantuan datang cepat, harga jelas di depan, orang yang datang terverifikasi | Uang hilang, helper kabur, harga membengkak setelah pesan |
 | ACT-02 | Helper (penolong) | Menerima pesanan, mengerjakan, menerima bayaran | Pesanan yang layak, bayaran pasti cair, jarak masuk akal | Sudah kerja tetapi tidak dibayar, dibatalkan sepihak setelah jalan, talangan tidak diganti |
 | ACT-03 | Sistem | Pencocokan, penahanan dana, notifikasi, pelepasan dana otomatis | Konsistensi status dan saldo | Kondisi balapan data dan saldo ganda |
-| ACT-04 | Admin operasional | Verifikasi identitas helper, menangani sengketa, menonaktifkan akun | Bukti yang cukup untuk memutuskan | Keputusan sengketa tanpa jejak audit |
+| ACT-04 | Admin operasional | Verifikasi identitas helper, menangani sengketa, menonaktifkan akun, membatalkan pesanan bermasalah, mengelola voucher | Bukti yang cukup untuk memutuskan | Keputusan sengketa tanpa jejak audit |
 
 ## 2. Stakeholder proyek
 
@@ -38,21 +38,33 @@ Istilah di bawah ini dipakai konsisten di seluruh dokumen, kode, dan nama tabel.
 | Helper | Pengguna terverifikasi yang menerima dan mengerjakan pesanan |
 | Order | Satu unit permintaan bantuan dengan satu client, satu helper, satu kategori, dan satu siklus hidup status |
 | Kategori layanan | Enam kategori yang terlihat di prototipe: Food run, Delivery, Moving, Personal, Household, Laundry |
-| Food run | Kategori dengan pola helper membelikan barang lebih dulu memakai uang sendiri lalu diganti client |
-| Talangan | Uang yang dikeluarkan helper terlebih dahulu untuk pembelian atas nama client |
+| Food run | Helper membeli barang atas nama client memakai talangan, lalu mengantarkannya. Punya batas talangan, struk, dan penyesuaian talangan |
+| Delivery | Helper mengambil barang di satu lokasi lalu mengantarkannya ke lokasi lain. Helper tidak membeli barang. Satu satunya kategori dengan kanal sengketa formal |
+| Moving | Helper membantu memindahkan atau mengangkat barang, misalnya pindahan kamar, kos, atau furnitur |
+| Personal | Bantuan pribadi non profesional seperti antre, mengambil dokumen, atau menemani keperluan. Tidak mencakup jasa bersertifikasi, mengangkut penumpang, menangani uang tunai pihak lain, aktivitas melanggar hukum, dan pekerjaan berbahaya atau berisiko tinggi |
+| Household | Pekerjaan rumah tangga sederhana di lokasi client yang tidak membutuhkan sertifikasi khusus |
+| Laundry | Jasa jemput dan antar ke penyedia laundry. Helper membayar laundry dengan talangan, lalu mengantar pakaian kembali. Helper tidak mencuci sendiri |
+| Talangan | Uang yang dikeluarkan helper terlebih dahulu untuk pembelian atas nama client, berlaku pada Food run dan Laundry. Diganti penuh di luar upah jasa dan tidak dipotong komisi |
+| Batas talangan | Nominal maksimal belanja yang client sediakan dan sistem tahan saat pesanan diterima. Belanja di atasnya hanya dijamin kalau client menyetujui |
+| Upah jasa | Harga jasa yang helper tawarkan, tidak termasuk uang belanja. Dasar perhitungan komisi platform |
+| Upah bersih | Upah jasa dikurangi komisi platform 10 persen, yang diterima helper |
+| Komisi bersih | Komisi platform setelah dipakai menanggung voucher, tidak pernah negatif |
+| Tawaran | Harga upah jasa yang helper ajukan pada pesanan broadcast |
+| Quote | Harga upah jasa yang helper ajukan pada direct booking, berlaku 300 detik |
 | TD-Wallet | Dompet internal aplikasi tempat saldo client dan pendapatan helper disimpan |
 | Escrow | Kondisi dana client ditahan sistem, tidak bisa dipakai client dan belum menjadi milik helper |
 | Hold | Aksi menahan dana ke escrow |
-| Release | Aksi melepas dana escrow menjadi saldo helper |
+| Release | Aksi melepas dana escrow menjadi saldo helper, terdiri atas upah bersih dan penggantian talangan |
 | Refund | Aksi mengembalikan dana escrow ke saldo client |
 | Payout | Penarikan saldo helper ke rekening atau dompet eksternal |
 | Broadcast | Penawaran pesanan ke banyak helper yang memenuhi syarat secara serentak |
-| Direct booking | Pemesanan langsung ke satu helper tertentu yang dipilih client dari daftar |
+| Direct booking | Pemesanan langsung ke satu helper tertentu yang dipilih client dari daftar. Helper tetap memberi quote, dan dana ditahan saat client menyetujui quote |
 | Ledger | Catatan mutasi saldo yang bersifat tambah saja dan tidak boleh diubah |
 | Idempotency key | Penanda unik agar satu permintaan yang dikirim ulang tidak menghasilkan transaksi ganda |
 | Verifikasi identitas | Proses pemeriksaan dokumen identitas sebelum akun boleh menjadi helper |
-| Sengketa | Kondisi ketika client dan helper berbeda pendapat soal penyelesaian pesanan |
-| SLA penerimaan | Batas waktu helper harus merespons tawaran pesanan sebelum hangus |
+| Sengketa | Kondisi ketika client dan helper berbeda pendapat soal penyelesaian pesanan. Kanal formal hanya untuk Delivery, diputuskan admin dengan pilihan berpihak client, berpihak helper, atau split 50:50 |
+| SLA penerimaan | Batas waktu helper merespons: 60 detik untuk konfirmasi setelah dipilih pada broadcast, 300 detik untuk memberi quote pada direct booking |
+| Suspend | Penonaktifan akun oleh admin. Hanya bisa dilakukan kalau akun tidak memiliki pesanan aktif atau sedang disengketakan |
 
 ## 5. Kaitan dengan SDG 8
 
