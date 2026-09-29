@@ -1,6 +1,6 @@
 # Use Case Inventory dan Inventaris Layar
 
-Status dokumen: `REVIEW` v0.2, 28 September 2026. Perubahan v0.2: lima use case baru mengikuti DEC-21 sampai DEC-23, penyesuaian UC-ORD-02B dengan rumus penahanan DEC-15, dan satu use case scenario baru untuk direct booking.
+Status dokumen: `REVIEW` v0.2, 28 September 2026, dengan koreksi arah relasi extend admin 29 September 2026. Perubahan v0.2: lima use case baru mengikuti DEC-21 sampai DEC-23, penyesuaian UC-ORD-02B dengan rumus penahanan DEC-15, dan satu use case scenario baru untuk direct booking.
 
 ## 1. Aktor
 
@@ -105,10 +105,10 @@ flowchart LR
     UC16 -.include.-> UC13
     UC20 -.include.-> UC13
     UC22 -.include.-> UC13
-    UC21 -.extend.-> UC22
+    UC22 -.extend.-> UC21
 ```
 
-Catatan untuk SRS: diagram di atas dipakai sebagai bahan, tetapi versi resmi di SRS sebaiknya digambar dengan notasi UML use case yang benar memakai draw.io atau Lucidchart, lengkap dengan batas sistem serta relasi include dan extend.
+Catatan untuk SRS: diagram di atas hanya peta ringkas. Versi resmi dengan notasi UML (batas sistem, generalisasi aktor, `«include»`, dan `«extend»`) ada di `13_use-case-dan-activity-diagram.md`, dipecah menjadi tiga diagram UC-D1 sampai UC-D3. Arah relasi `UC-ADM-05 «extend» UC-ADM-04` di atas diperbaiki 29 September 2026: sebelumnya tertulis terbalik.
 
 ## 4. Inventaris layar dari prototipe
 

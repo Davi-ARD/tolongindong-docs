@@ -26,7 +26,9 @@ tolongindong-docs/
 ├── 09_dokumentasi-keputusan-minggu-1.md       <- catatan lima keputusan hasil sesi 19 Agustus dan dampaknya
 ├── 10_notulen-sinkronisasi-erd-final.md      <- 12 jawaban Mentor dan keputusan T-01 sampai T-12 (DEC-14 sampai DEC-24)
 ├── 11_skenario-pengguna.md                   <- naskah alur pengguna end to end untuk UI/UX dan QA
-└── 12_class-diagram.md                       <- class diagram model domain dan service layer
+├── 12_class-diagram.md                       <- class diagram model domain dan service layer
+├── 13_use-case-dan-activity-diagram.md       <- 3 use case diagram dan 8 activity diagram, XML draw.io siap tempel
+└── assets/13/                                <- gambar pratinjau dan file .drawio untuk dokumen 13
 ```
 
 Struktur penyimpanan tim di Google Drive:
@@ -96,7 +98,7 @@ Alur kerja SA sembilan langkah dari materi lab dipetakan ke rencana eksekusi sep
 | 3 | Analysis dan validation | `04_dual-role-transaction-analysis.md` | Selesai |
 | 4 | Requirement documentation | `02_requirement-master-list.md` v0.2, SRS bab 1 sampai 3 | Master list selesai, SRS v0.3 berikutnya |
 | 5 | Verifikasi ke stakeholder | `10_notulen-sinkronisasi-erd-final.md`, jawaban 12 pertanyaan Mentor | Selesai 28 Sep 2026 |
-| 6 | Modelling | `03_use-case-inventory.md`, `05_erd-draft.md` v0.3, `12_class-diagram.md`, activity diagram | Class diagram selesai 28 Sep 2026, activity diagram berikutnya |
+| 6 | Modelling | `03_use-case-inventory.md`, `05_erd-draft.md` v0.3, `12_class-diagram.md`, `13_use-case-dan-activity-diagram.md` | Class diagram selesai 28 Sep 2026, use case dan activity diagram draf 29 Sep 2026 |
 | 7 | Handover ke Design dan Dev | `06_api-contract-draft.md`, SDD bab 1 sampai 3 | Setelah modelling stabil |
 | 8 | Monitoring development | log perubahan requirement dan dampaknya | Berjalan |
 | 9 | Support UAT | `07_acceptance-criteria-gherkin.md` | Menjelang UAT |
