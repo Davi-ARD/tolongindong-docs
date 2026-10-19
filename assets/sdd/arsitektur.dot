@@ -1,0 +1,32 @@
+digraph ARCH {
+graph [rankdir=TB, fontname="Arial", nodesep=0.4, ranksep=0.45, pad=0.2, compound=true];
+node [shape=box, style="rounded,filled", fillcolor="#FFF4D6", color="#664C00", fontname="Arial", fontsize=15, margin="0.15,0.08"];
+edge [color="#664C00", fontname="Arial", fontsize=13];
+subgraph cluster_client { label="Klien"; fontname="Arial Bold"; fontsize=15; color="#999999"; style="rounded,dashed";
+  mobile [label="Aplikasi Mobile\nFlutter (Android 9+, iOS 14+)\nClient dan Helper"];
+  admin [label="Panel Admin\n(Mentor sebagai admin operasional)"];
+}
+subgraph cluster_be { label="Backend Laravel (PHP)"; fontname="Arial Bold"; fontsize=15; color="#664C00"; style="rounded";
+  api [label="REST API JSON\nRoutes, Controller,\nForm Request, Policy"];
+  auth [label="Laravel Sanctum\n(token akses)"];
+  svc [label="Service Layer\nOrderStateMachine, OfferService,\nEscrowService, SettlementCalculator,\nChatService, HelperSearchService,\nCancellationPolicy, DisputeService,\nAdminService, VoucherService"];
+  model [label="Model Eloquent\n(User, HelperProfile, Order,\nOrderOffer, ChatRoom, Wallet, ...)"];
+  sched [label="Scheduler dan Queue\n(batas quote 300 detik,\nkonfirmasi otomatis 24 jam)"];
+}
+db [label="Supabase\nPostgreSQL saja", shape=cylinder];
+r2 [label="Cloudflare R2\nbucket publik: foto profil, bukti\nbucket privat: KTP, swafoto"];
+subgraph cluster_ext { label="Layanan eksternal\n(disimulasikan)"; fontname="Arial Bold"; fontsize=15; color="#999999"; style="rounded,dashed";
+  push [label="Notifikasi push"]; sms [label="SMS OTP"]; maps [label="Peta dan geolokasi"];
+}
+mobile -> api [label="HTTPS, Bearer token"];
+admin -> api [label="HTTPS, login admin terpisah"];
+api -> auth;
+api -> svc;
+svc -> model;
+model -> db [label="SQL"];
+sched -> svc;
+svc -> r2 [label="unggah, signed URL"];
+svc -> push; svc -> sms;
+mobile -> maps [style=dashed];
+push -> sms -> maps [style=invis];
+}

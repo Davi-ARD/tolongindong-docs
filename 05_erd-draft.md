@@ -1,8 +1,8 @@
 # ERD dan Catatan Skema
 
-Status dokumen: `REVIEW` v0.3, 28 September 2026. Versi ini menggabungkan `erd_final.md` susunan Backend dengan seluruh keputusan di `10_notulen-sinkronisasi-erd-final.md` (DEC-14 sampai DEC-24). Tabel dan kolom yang berasal langsung dari keputusan berstatus final. Sebelas turunan SA yang belum dikonfirmasi Kai ditandai **(turunan SA)** dan dirangkum di bagian 7.
+Status dokumen: `REVIEW` v0.4, 19 Oktober 2026. Versi ini menerapkan DEC-25 sampai DEC-27 (`14_perubahan-model-marketplace.md`) di atas v0.3. Tabel dan kolom yang berasal langsung dari keputusan berstatus final. Turunan SA yang belum dikonfirmasi Kai ditandai **(turunan SA)** dan dirangkum di bagian 7. Daftar perubahan skema untuk migrasi ada di bagian 8.
 
-Riwayat singkat: v0.1 draf SA, v0.2 perbaikan mekanis hasil review Kai 6 September 2026, v0.3 penggabungan ERD final dan keputusan sinkronisasi. Catatan review lama yang sudah tidak relevan (kolom `is_revealed`, `rater_role`, voucher bertumpuk, cooldown verifikasi) dihapus dari dokumen ini dan hanya tersisa di riwayat git.
+Riwayat singkat: v0.1 draf SA, v0.2 perbaikan mekanis hasil review Kai 6 September 2026, v0.3 penggabungan ERD final dan keputusan sinkronisasi 28 September 2026, v0.4 model pemesanan marketplace dan penghapusan talangan 19 Oktober 2026. Rincian v0.3 yang sudah tidak berlaku (tabel `PRICE_ADJUSTMENT`, kolom talangan, `booking_type`) hanya tersisa di riwayat git.
 
 ## 1. Diagram
 
@@ -14,23 +14,22 @@ erDiagram
     USER ||--|| WALLET : memiliki
     USER ||--o{ ADDRESS : menyimpan
     USER ||--o{ ORDER : "membuat sebagai client"
-    HELPER_PROFILE ||--o{ ORDER : "mengerjakan sebagai helper"
+    HELPER_PROFILE ||--o{ ORDER : "dipilih sebagai helper"
     HELPER_PROFILE ||--o{ HELPER_SERVICE_CATEGORY : menguasai
     SERVICE_CATEGORY ||--o{ HELPER_SERVICE_CATEGORY : dikuasai
     SERVICE_CATEGORY ||--o{ ORDER : mengkategorikan
     ORDER ||--o{ ORDER_STATUS_HISTORY : mencatat
-    ORDER ||--o{ ORDER_OFFER : menerima
-    HELPER_PROFILE ||--o{ ORDER_OFFER : mengajukan
-    ORDER ||--o{ PRICE_ADJUSTMENT : "struk talangan"
+    ORDER ||--o| ORDER_OFFER : "menerima quote"
     ORDER ||--o{ ORDER_ATTACHMENT : "foto bukti"
-    ORDER_ATTACHMENT ||--o| PRICE_ADJUSTMENT : "menjadi struk"
     ORDER ||--o{ WALLET_TRANSACTION : memicu
     ORDER ||--o| RATING : "dinilai client"
-    ORDER ||--o| CHAT_ROOM : "dibuka saat accepted"
     ORDER ||--o| DISPUTE : "boleh sengketa"
     ORDER ||--o| USER_VOUCHER : "memakai voucher"
-    WALLET ||--o{ WALLET_TRANSACTION : mencatat
+    ORDER ||--o{ CHAT_MESSAGE : "konteks pesanan"
+    USER ||--o{ CHAT_ROOM : "membuka sebagai client"
+    HELPER_PROFILE ||--o{ CHAT_ROOM : dihubungi
     CHAT_ROOM ||--o{ CHAT_MESSAGE : berisi
+    WALLET ||--o{ WALLET_TRANSACTION : mencatat
     USER ||--o{ NOTIFICATION : menerima
     USER ||--o{ USER_VOUCHER : memiliki
     VOUCHER ||--o{ USER_VOUCHER : diterbitkan
@@ -66,7 +65,6 @@ erDiagram
         int rating_count
         int completed_order_count
         int cancelled_order_count
-        bigint max_advance_limit
         timestamp approved_at
         timestamp updated_at
     }
@@ -83,7 +81,6 @@ erDiagram
         varchar code UK
         varchar name
         bigint base_fee
-        boolean requires_advance
         boolean requires_proof_photo
         boolean requires_pickup_photo
         boolean requires_pickup_address
@@ -111,7 +108,6 @@ erDiagram
         bigint client_id FK
         bigint helper_id FK
         bigint category_id FK
-        enum booking_type
         enum status
         text task_description
         bigint pickup_address_id FK
@@ -123,29 +119,26 @@ erDiagram
         bigint total_amount
         bigint voucher_discount
         bigint service_client_charge
-        bigint advance_limit
-        bigint advance_actual
         bigint held_amount
         bigint platform_commission
         bigint helper_payout
         bigint cancellation_fee
         timestamp scheduled_at
-        timestamp offer_window_expires_at
+        timestamp quote_deadline_at
         timestamp accepted_at
         timestamp helper_finished_at
         timestamp completed_at
+        timestamp created_at
         timestamp updated_at
     }
 
     ORDER_OFFER {
         bigint id PK
         bigint order_id FK
-        bigint helper_id FK
         bigint proposed_price
         enum offer_status
         timestamp offered_at
         timestamp valid_until
-        timestamp confirmation_expires_at
         timestamp responded_at
         timestamp updated_at
     }
@@ -168,19 +161,6 @@ erDiagram
         enum attachment_type
         varchar file_url
         timestamp created_at
-    }
-
-    PRICE_ADJUSTMENT {
-        bigint id PK
-        bigint order_id FK
-        bigint receipt_attachment_id FK
-        bigint requested_amount
-        bigint recognized_amount
-        bigint additional_hold_amount
-        enum approval_status
-        timestamp requested_at
-        timestamp responded_at
-        timestamp updated_at
     }
 
     WALLET {
@@ -216,9 +196,10 @@ erDiagram
 
     CHAT_ROOM {
         bigint id PK
-        bigint order_id FK
-        boolean is_read_only
-        timestamp closed_at
+        bigint client_id FK
+        bigint helper_profile_id FK
+        timestamp last_message_at
+        timestamp created_at
         timestamp updated_at
     }
 
@@ -226,6 +207,7 @@ erDiagram
         bigint id PK
         bigint chat_room_id FK
         bigint sender_user_id FK
+        bigint order_id FK
         text content
         varchar attachment_url
         timestamp read_at
@@ -309,47 +291,54 @@ erDiagram
 
 ## 2. Kamus data untuk kolom yang sering disalahpahami
 
-### 2.1 Empat konsep uang pada `ORDER` (DEC-15)
+### 2.1 Konsep uang pada `ORDER` (DEC-15, disederhanakan DEC-25)
 
-Catatan tim pada sinkronisasi menegaskan bahwa empat angka di bawah tidak boleh digabung dalam satu kolom dengan nama alternatif. Seluruh kolom nominal bertipe `bigint` dalam satuan rupiah penuh.
+Seluruh kolom nominal bertipe `bigint` dalam satuan rupiah penuh. Sejak talangan dihapus, `advance_limit` dan `advance_actual` tidak ada lagi. `held_amount` tetap disimpan sebagai kolom sendiri walaupun nilainya kini selalu sama dengan `service_client_charge` (INV-18), supaya invarian escrow (INV-03, INV-09) tetap merujuk satu kolom yang jelas dan rumus tidak perlu ditulis ulang kalau suatu saat ada komponen dana tertahan lain.
 
 | Kolom | Arti | Kapan diisi |
 | --- | --- | --- |
-| `client_estimated_price` | Harga estimasi upah jasa yang client ajukan saat membuat pesanan. Hanya panduan **(turunan SA)** | Saat pesanan dibuat |
+| `client_estimated_price` | Harga estimasi upah jasa yang client isi di form permintaan. Hanya panduan bagi helper menyusun quote **(turunan SA)** | Saat pesanan dibuat |
 | `base_fee`, `distance_fee`, `service_fee` | Komponen rentang biaya acuan FR-ORD-002. `service_fee` flat sama dengan `service_category.base_fee` (DEC-14 nomor 4). Bukan dasar penahanan dana | Saat estimasi dihitung |
-| `total_amount` | Harga jasa final dari tawaran atau quote yang terkonfirmasi. Tidak pernah memuat uang belanja | Saat dana ditahan |
+| `total_amount` | Harga jasa final, sama dengan `order_offers.proposed_price` yang disetujui client | Saat dana ditahan |
 | `voucher_discount` | Diskon voucher yang berlaku, maksimal sama dengan komisi kotor | Saat dana ditahan |
 | `service_client_charge` | `total_amount - voucher_discount`, harga jasa yang client bayar | Saat dana ditahan |
-| `advance_limit` | Batas talangan yang client sediakan. Bernilai 0 untuk kategori tanpa talangan | Saat pesanan dibuat |
-| `held_amount` | Dana yang sedang ditahan escrow untuk pesanan ini. Awalnya `service_client_charge + advance_limit`, bertambah setiap penyesuaian disetujui | Saat ditahan, diperbarui saat penyesuaian disetujui |
-| `advance_actual` | Jumlah `price_adjustment.recognized_amount`, yaitu belanja yang diganti ke helper | Saat struk diakui |
-| `helper_payout` | Upah bersih helper, `total_amount - floor(total_amount x 10%)`. Tidak memuat talangan | Saat settlement |
+| `held_amount` | Dana yang ditahan escrow untuk pesanan ini, sama dengan `service_client_charge` | Saat dana ditahan |
+| `helper_payout` | Upah bersih helper, `total_amount - floor(total_amount x 10%)` | Saat settlement |
 | `platform_commission` | Komisi bersih platform, `floor(total_amount x 10%) - voucher_discount`, minimal nol | Saat settlement |
 | `cancellation_fee` | Kompensasi pembatalan yang masuk ke helper, 0 kalau pembatalan gratis | Saat dibatalkan |
-
-Batas talangan yang sedang berlaku tidak disimpan sebagai kolom terpisah. Backend menghitungnya sebagai `held_amount - service_client_charge`.
 
 ### 2.2 Rumus settlement
 
 ```
-Saat dana ditahan
+Saat client menyetujui quote
+  total_amount          = order_offers.proposed_price
   gross_commission      = floor(total_amount x 10 / 100)
-  voucher_discount      = min(nilai_voucher, gross_commission)
+  voucher_discount      = min(nilai_voucher, gross_commission)   (0 kalau voucher tidak memenuhi syarat)
   service_client_charge = total_amount - voucher_discount
-  held_amount           = service_client_charge + advance_limit
+  held_amount           = service_client_charge
 
 Saat pesanan selesai (completed, atau sengketa favor_helper)
   helper_payout         = total_amount - gross_commission
   platform_commission   = gross_commission - voucher_discount
-  helper_release        = helper_payout + advance_actual
-  client_refund         = held_amount - helper_release - platform_commission
+  helper_release        = helper_payout
+  client_refund         = held_amount - helper_release - platform_commission   (selalu 0)
 
-Saat pesanan dibatalkan
-  helper_release        = advance_actual + cancellation_fee
+Saat pesanan dibatalkan client
+  helper_release        = cancellation_fee   (maksimal service_client_charge)
   platform_commission   = 0
   client_refund         = held_amount - helper_release
 
-Saat sengketa split (khusus Delivery, tanpa talangan)
+Saat pesanan dibatalkan helper atau admin
+  helper_release        = 0
+  platform_commission   = 0
+  client_refund         = held_amount
+
+Saat sengketa favor_client
+  helper_release        = 0
+  platform_commission   = 0
+  client_refund         = held_amount
+
+Saat sengketa split (khusus Delivery)
   helper_release        = floor(held_amount / 2)   (usulan turunan SA, aturan selisih Rp1 diputuskan BE)
   client_refund         = held_amount - helper_release
   platform_commission   = 0
@@ -358,102 +347,115 @@ Invarian di semua kasus
   helper_release + platform_commission + client_refund = held_amount
 ```
 
-Contoh angka yang sudah diuji dengan skrip, dipakai konsisten di `06`, `07`, dan `11`:
+Contoh angka yang sudah diuji dengan skrip, dipakai konsisten di `04`, `06`, `07`, dan `11`. Voucher HEMAT2K adalah potongan tetap Rp 2.000 dengan minimal pesanan Rp 20.000. Voucher Rp 4.000 dan Rp 5.000 masing masing bersyarat minimal pesanan Rp 40.000 dan Rp 50.000, sesuai validasi DEC-23.
 
-| Kasus | total_amount | Voucher | advance_limit | Struk | held_amount | Ke helper | Komisi bersih | Kembali ke client |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Food run normal | 20.000 | 2.000 | 50.000 | 43.000 | 68.000 | 61.000 | 0 | 7.000 |
-| Food run, penyesuaian disetujui | 20.000 | 0 | 50.000 | 58.000 | 78.000 | 76.000 | 2.000 | 0 |
-| Food run, penyesuaian ditolak | 20.000 | 0 | 50.000 | 58.000 | 70.000 | 68.000 | 2.000 | 0 |
-| Delivery dengan voucher | 50.000 | 5.000 | 0 | 0 | 45.000 | 45.000 | 0 | 0 |
-| Batal client, accepted 2 menit lebih, Food run | 20.000 | 2.000 | 50.000 | 0 | 68.000 | 5.000 | 0 | 63.000 |
-| Batal client, on_the_way, Delivery | 40.000 | 4.000 | 0 | 0 | 36.000 | 10.000 | 0 | 26.000 |
-| Admin cancel, Food run sudah belanja sah | 20.000 | 2.000 | 50.000 | 40.000 | 68.000 | 40.000 | 0 | 28.000 |
+| Kasus | total_amount | Voucher | held_amount | Ke helper | Komisi bersih | Kembali ke client |
+| --- | --- | --- | --- | --- | --- | --- |
+| Household normal, voucher HEMAT2K | 50.000 | 2.000 | 48.000 | 45.000 | 3.000 | 0 |
+| Delivery, voucher setara komisi kotor | 50.000 | 5.000 | 45.000 | 45.000 | 0 | 0 |
+| Delivery tanpa voucher | 38.000 | 0 | 38.000 | 34.200 | 3.800 | 0 |
+| Batal client, accepted 120 detik lebih, Household | 50.000 | 2.000 | 48.000 | 5.000 | 0 | 43.000 |
+| Batal client, on_the_way, Delivery | 40.000 | 4.000 | 36.000 | 10.000 | 0 | 26.000 |
+| Batal helper atau admin, Household | 50.000 | 2.000 | 48.000 | 0 | 0 | 48.000 |
+| Sengketa Delivery, favor_helper | 60.000 | 0 | 60.000 | 54.000 | 6.000 | 0 |
+| Sengketa Delivery, favor_client | 60.000 | 0 | 60.000 | 0 | 0 | 60.000 |
+| Sengketa Delivery, split | 60.000 | 0 | 60.000 | 30.000 | 0 | 30.000 |
 
-Pada baris "penyesuaian ditolak", struk Rp58.000 melewati batas Rp50.000 dan client menolak, sehingga `recognized_amount` hanya Rp50.000. Selisih Rp8.000 menjadi risiko helper karena belanja di atas batas tidak dijamin tanpa persetujuan client (DEC-20).
+### 2.3 Tabel `ORDER_OFFER` sebagai quote (DEC-21, DEC-26)
 
-### 2.3 Tabel `PRICE_ADJUSTMENT` (DEC-14 nomor 2, DEC-17, DEC-20)
-
-Satu baris mewakili satu struk yang helper unggah pada pesanan bertalangan (Food run dan Laundry). Satu pesanan boleh punya banyak baris, tetapi hanya satu berstatus `pending` pada satu waktu.
+Nama tabel tetap `order_offers` supaya Backend tidak perlu mengganti model dan migrasi yang mungkin sudah dibuat, tetapi isinya kini hanya quote. Satu pesanan punya maksimal satu baris **(turunan SA nomor 17)**.
 
 | Kolom | Arti |
 | --- | --- |
-| `receipt_attachment_id` | Menunjuk ke `order_attachment` bertipe `receipt`, menggantikan kolom `receipt_photo_url` di ERD final |
-| `requested_amount` | Nominal pada struk |
-| `recognized_amount` | Nominal yang diakui untuk diganti ke helper **(turunan SA)** |
-| `additional_hold_amount` | Dana tambahan yang ditahan karena struk melewati batas dan client menyetujui **(turunan SA)** |
-| `approval_status` | `auto_approved` kalau struk masih dalam sisa batas, `pending` kalau melewati batas, lalu `approved` atau `rejected` setelah client merespons |
+| `order_id` | Pesanan yang di-quote, unik |
+| `proposed_price` | Upah jasa yang helper ajukan, tidak pernah memuat uang belanja |
+| `offer_status` | `submitted` saat quote dikirim, `confirmed` saat client menyetujui dan dana ditahan, `expired` kalau lewat `valid_until` tanpa persetujuan, `withdrawn` kalau pesanan batal sebelum quote disetujui |
+| `offered_at` | Waktu quote dikirim |
+| `valid_until` | `offered_at` ditambah 300 detik, batas client menyetujui |
+| `responded_at` | Waktu client menyetujui, atau waktu baris berubah menjadi `expired` atau `withdrawn` |
 
-Aturan pengisian:
+Kalau helper menolak permintaan sebelum memberi quote, tidak ada baris `order_offers` yang dibuat. Pesanan langsung berubah menjadi `expired` dan alasan penolakan disimpan di `order_status_history.reason`.
 
-| Kondisi | `approval_status` | `recognized_amount` | `additional_hold_amount` | Status pesanan |
-| --- | --- | --- | --- | --- |
-| `advance_actual + requested_amount` masih dalam batas | `auto_approved` | `requested_amount` | 0 | Tetap `in_progress` |
-| Melewati batas, menunggu client | `pending` | 0 | 0 | `price_adjustment` |
-| Client menyetujui | `approved` | `requested_amount` | kelebihan di atas batas | Kembali `in_progress` |
-| Client menolak | `rejected` | sisa batas yang belum terpakai | 0 | Kembali `in_progress` |
+### 2.4 Tabel `CHAT_ROOM` dan `CHAT_MESSAGE` (DEC-27)
 
-### 2.4 Kolom lain
+| Kolom | Arti |
+| --- | --- |
+| `chat_rooms.client_id` | User yang membuka ruang sebagai client. Hanya client yang bisa membuka ruang baru **(turunan SA nomor 13)** |
+| `chat_rooms.helper_profile_id` | Helper yang dihubungi. Pasangan `client_id` dan `helper_profile_id` unik **(turunan SA nomor 12)** |
+| `chat_rooms.last_message_at` | Dipakai mengurutkan daftar percakapan FR-CHT-002 |
+| `chat_messages.order_id` | Diisi otomatis dengan pesanan pasangan itu yang sedang berstatus `awaiting_quote` sampai `disputed`. Kosong untuk pesan sebelum pesanan **(turunan SA nomor 14)** |
+| `chat_messages.sender_user_id` | Pengirim, harus salah satu dari user client atau user pemilik helper profile pada ruang itu |
+
+Kolom `chat_rooms.order_id`, `is_read_only`, dan `closed_at` versi v0.3 dihapus karena ruang tidak lagi ditutup per pesanan (FR-CHT-004 DEPRECATED).
+
+### 2.5 Kolom lain
+
+`ORDER.helper_id` terisi sejak pesanan dibuat dengan helper yang client pilih, dan tidak pernah berubah (INV-17). Relasi `ORDER` ke `HELPER_PROFILE` kini wajib, bukan opsional.
+
+`ORDER.quote_deadline_at` adalah waktu pesanan dibuat ditambah 300 detik, batas helper memberi quote atau menolak **(turunan SA nomor 18)**. Kolom ini menggantikan `offer_window_expires_at`.
 
 `SERVICE_CATEGORY.requires_destination_address` pada Personal dan Household berarti lokasi pengerjaan, bukan tujuan antar. UI/UX memakai label "Lokasi pengerjaan" untuk dua kategori itu (DEC-16).
 
-`SERVICE_CATEGORY.requires_pickup_photo` dan `is_dispute_eligible` adalah dua kolom baru **(turunan SA)**. Keduanya memindahkan aturan "foto penjemputan wajib" dan "sengketa hanya Delivery" dari kode ke data, mengikuti pola kolom `requires_*` yang sudah Kai pakai.
+`SERVICE_CATEGORY.requires_pickup_photo` dan `is_dispute_eligible` adalah dua kolom **(turunan SA)**. Keduanya memindahkan aturan "foto penjemputan wajib" dan "sengketa hanya Delivery" dari kode ke data, mengikuti pola kolom `requires_*`. Kolom `requires_advance` dihapus bersama talangan.
 
 `USER.verification_status` adalah ringkasan. Backend memperbaruinya dalam transaksi basis data yang sama dengan `VERIFICATION_REQUEST.review_status` saat admin memutuskan (DEC-16).
 
-`USER.is_suspended` adalah satu-satunya sumber status suspend. `HELPER_PROFILE.is_available` hanya bernilai `available` atau `unavailable` (DEC-16).
+`USER.is_suspended` adalah satu-satunya sumber status suspend. `HELPER_PROFILE.is_available` hanya bernilai `available` atau `unavailable` (DEC-16). Daftar helper hanya menampilkan helper dengan `is_available = available`, pemilik akun tidak disuspend, dan `verification_status = verified`.
 
-`ORDER_OFFER.valid_until` dipakai pada direct booking untuk batas 300 detik quote berlaku. `confirmation_expires_at` hanya dipakai pada broadcast untuk batas konfirmasi 60 detik (DEC-21).
+`HELPER_PROFILE.max_advance_limit` dihapus bersama talangan.
 
 `ORDER.helper_finished_at` mencatat waktu helper menandai pekerjaan selesai, menjadi titik awal hitungan 24 jam konfirmasi otomatis dan jendela sengketa.
 
-Relasi `ORDER` ke `CHAT_ROOM` berubah dari `1..1` menjadi `0..1`. Ruang chat baru dibuat saat pesanan `accepted`, karena chat hanya tersedia setelah client dan helper terhubung (DEC-14 nomor 10). Pesanan yang kedaluwarsa atau batal sebelum diterima tidak pernah punya ruang chat.
-
 `USER_VOUCHER.discount_applied` menyimpan diskon sungguhan saat dipakai, terpisah dari `VOUCHER.discount_value` yang bisa berubah belakangan.
 
-## 3. Konfigurasi kategori (DEC-14 nomor 3, DEC-18)
+## 3. Konfigurasi kategori (DEC-14 nomor 3, DEC-18, DEC-25)
 
-| `code` | `requires_advance` | `requires_proof_photo` | `requires_pickup_photo` | `requires_pickup_address` | `requires_destination_address` | `is_dispute_eligible` |
-| --- | --- | --- | --- | --- | --- | --- |
-| `food_run` | true | true | false | true | true | false |
-| `delivery` | false | true | true | true | true | true |
-| `moving` | false | false | false | true | true | false |
-| `personal` | false | false | false | false | true (lokasi pengerjaan) | false |
-| `household` | false | false | false | false | true (lokasi pengerjaan) | false |
-| `laundry` | true | true | false | true | true | false |
+| `code` | `requires_proof_photo` | `requires_pickup_photo` | `requires_pickup_address` | `requires_destination_address` | `is_dispute_eligible` |
+| --- | --- | --- | --- | --- | --- |
+| `delivery` | true | true | true | true | true |
+| `personal` | false | false | false | true (lokasi pengerjaan) | false |
+| `household` | false | false | false | true (lokasi pengerjaan) | false |
 
-Laundry memakai model jemput dan antar ke penyedia laundry dengan talangan, bukan helper mencuci sendiri (DEC-18). Kolom `requires_proof_photo` mengikuti FR-ORD-013, `requires_pickup_photo` mengikuti FR-ORD-021.
+Baris `food_run`, `moving`, dan `laundry` dihapus dari data seed (DEC-25). Kolom `requires_proof_photo` mengikuti FR-ORD-013, `requires_pickup_photo` mengikuti FR-ORD-021.
 
-## 4. Nilai enumerasi (DEC-16)
+## 4. Nilai enumerasi (DEC-16, disesuaikan DEC-25 sampai DEC-27)
 
 | Kolom | Nilai yang diperbolehkan |
 | --- | --- |
 | `user.verification_status` | `unverified`, `pending`, `verified`, `rejected` |
 | `helper_profile.is_available` | `available`, `unavailable` |
-| `order.booking_type` | `broadcast`, `direct` |
-| `order.status` | `draft`, `searching`, `awaiting_quote`, `pending_confirmation`, `accepted`, `on_the_way`, `arrived`, `in_progress`, `price_adjustment`, `awaiting_confirmation`, `completed`, `cancelled_by_client`, `cancelled_by_helper`, `cancelled_by_admin`, `expired`, `disputed`, `refunded`, `partially_refunded` **(turunan SA)** |
-| `order_offer.offer_status` | `submitted`, `selected`, `confirmed`, `not_selected`, `withdrawn`, `expired`, `declined` |
-| `order_attachment.attachment_type` | `pickup_proof`, `completion_proof`, `dispute_evidence`, `receipt` |
-| `price_adjustment.approval_status` | `pending`, `approved`, `rejected`, `auto_approved` |
-| `wallet_transaction.transaction_type` | `topup`, `hold`, `release`, `advance_reimbursement` **(turunan SA)**, `refund`, `payout`, `cancellation_fee` |
+| `order.status` | `draft`, `awaiting_quote`, `accepted`, `on_the_way`, `arrived`, `in_progress`, `awaiting_confirmation`, `completed`, `cancelled_by_client`, `cancelled_by_helper`, `cancelled_by_admin`, `expired`, `disputed`, `refunded`, `partially_refunded` **(turunan SA)** |
+| `order_offer.offer_status` | `submitted`, `confirmed`, `expired`, `withdrawn` |
+| `order_attachment.attachment_type` | `pickup_proof`, `completion_proof`, `dispute_evidence` |
+| `wallet_transaction.transaction_type` | `topup`, `hold`, `release`, `refund`, `payout`, `cancellation_fee` |
 | `dispute.resolution` | `pending`, `favor_client`, `favor_helper`, `split` |
 | `admin_action_log.action_type` | `approve_verification`, `reject_verification`, `resolve_dispute`, `suspend_account`, `reactivate_account`, `cancel_order`, `create_voucher`, `update_voucher`, `deactivate_voucher` |
 | `voucher.discount_type` | `fixed`, `percentage` |
 | `notification.type` | `order_offer`, `order_status_change`, `chat_message`, `dispute_update`, `wallet_mutation`, `promo` |
 
-Tipe `commission` dan `adjustment` pada `transaction_type` versi lama dihapus. Komisi platform tidak masuk dompet siapa pun, sehingga tidak butuh baris mutasi, dan ringkasan komisi FR-ADM-007 membaca `orders.platform_commission`. Penahanan tambahan dari penyesuaian yang disetujui memakai tipe `hold` biasa. Nilai `wallet_topup` pada `notification.type` diganti `wallet_mutation` supaya mencakup notifikasi FR-NOT-004.
+Nilai yang dihapus 19 Oktober 2026: `order.booking_type` seluruhnya, status `searching`, `pending_confirmation`, dan `price_adjustment`, `offer_status` `selected`, `not_selected`, dan `declined`, `attachment_type` `receipt`, `transaction_type` `advance_reimbursement`, serta enum `price_adjustment.approval_status` bersama tabelnya.
+
+Nilai `notification.type` `order_offer` dipertahankan dan kini berarti notifikasi permintaan pesanan ke helper dan quote masuk ke client. Komisi platform tetap tidak masuk dompet siapa pun, sehingga ringkasan komisi FR-ADM-007 membaca `orders.platform_commission`.
 
 ## 5. Aturan integritas dan indeks PostgreSQL
 
 ### 5.1 Indeks dan constraint
 
 ```sql
--- Kueri pesanan aktif client dan helper
+-- Kueri pesanan aktif client dan helper, termasuk permintaan awaiting_quote milik helper
 CREATE INDEX idx_orders_client_status ON orders(client_id, status);
 CREATE INDEX idx_orders_helper_status ON orders(helper_id, status);
 
--- Kueri tawaran helper aktif
-CREATE INDEX idx_order_offers_helper_status ON order_offers(helper_id, offer_status);
+-- Satu quote per pesanan (turunan SA nomor 17)
+CREATE UNIQUE INDEX uq_order_offer_order ON order_offers(order_id);
+
+-- Satu ruang percakapan per pasangan client dan helper (turunan SA nomor 12)
+CREATE UNIQUE INDEX uq_chat_room_pair ON chat_rooms(client_id, helper_profile_id);
+
+-- Daftar percakapan dan isi percakapan
+CREATE INDEX idx_chat_rooms_client_last ON chat_rooms(client_id, last_message_at DESC);
+CREATE INDEX idx_chat_rooms_helper_last ON chat_rooms(helper_profile_id, last_message_at DESC);
+CREATE INDEX idx_chat_messages_room_created ON chat_messages(chat_room_id, created_at);
 
 -- Riwayat mutasi dompet
 CREATE INDEX idx_wallet_tx_wallet_created ON wallet_transactions(wallet_id, created_at DESC);
@@ -464,14 +466,8 @@ CREATE UNIQUE INDEX uq_user_voucher_order ON user_vouchers(used_order_id) WHERE 
 -- Satu pengajuan verifikasi pending per pengguna (DEC-14 nomor 7)
 CREATE UNIQUE INDEX uq_verification_pending ON verification_requests(user_id) WHERE review_status = 'pending';
 
--- Satu penyesuaian harga pending per order (DEC-14 nomor 2)
-CREATE UNIQUE INDEX uq_price_adjustment_pending ON price_adjustments(order_id) WHERE approval_status = 'pending';
-
 -- Rating satu arah, satu per order (DEC-09)
 CREATE UNIQUE INDEX uq_rating_order ON ratings(order_id);
-
--- Satu tawaran per helper per order
-CREATE UNIQUE INDEX uq_offer_order_helper ON order_offers(order_id, helper_id);
 
 -- Pivot kategori helper (DEC-16)
 CREATE UNIQUE INDEX uq_helper_category ON helper_service_categories(helper_profile_id, service_category_id);
@@ -480,9 +476,10 @@ CREATE UNIQUE INDEX uq_helper_category ON helper_service_categories(helper_profi
 ALTER TABLE wallets ADD CONSTRAINT chk_wallet_nonneg CHECK (available_balance >= 0 AND held_balance >= 0);
 ALTER TABLE orders ADD CONSTRAINT chk_voucher_cap CHECK (voucher_discount <= total_amount / 10);
 ALTER TABLE orders ADD CONSTRAINT chk_commission_nonneg CHECK (platform_commission >= 0);
+ALTER TABLE orders ADD CONSTRAINT chk_held_equals_charge CHECK (held_amount = service_client_charge);
 ```
 
-Pembagian bilangan bulat `total_amount / 10` di PostgreSQL sudah membulatkan ke bawah, sama dengan `floor(total_amount x 10%)`.
+Pembagian bilangan bulat `total_amount / 10` di PostgreSQL sudah membulatkan ke bawah, sama dengan `floor(total_amount x 10%)`. Constraint `chk_held_equals_charge` menegakkan INV-18 dan harus dilepas kalau suatu saat ada komponen dana tertahan lain.
 
 ### 5.2 Invarian dompet
 
@@ -495,12 +492,17 @@ Pembagian bilangan bulat `total_amount / 10` di PostgreSQL sudah membulatkan ke 
 
 | Aturan | Sumber |
 | --- | --- |
-| Suspend ditolak kalau pengguna masih punya order berstatus `pending_confirmation` sampai `awaiting_confirmation`, atau `disputed` | DEC-22 |
-| Admin cancel hanya untuk order berstatus `pending_confirmation` sampai `awaiting_confirmation`, tidak untuk `disputed` | DEC-22 |
-| Pesanan bertalangan tidak disiarkan ke helper dengan `max_advance_limit < orders.advance_limit`, dan tawaran dari helper itu ditolak | DEC-17 |
+| Permintaan pesanan ditolak kalau helper tujuan belum `verified`, sedang `unavailable`, akunnya disuspend, tidak menguasai kategori pesanan, atau sedang memegang pesanan `accepted` sampai `awaiting_confirmation` | DEC-26, FR-VER-004, FR-ORD-017 |
+| Permintaan pesanan dan pembukaan ruang chat ditolak kalau user pemilik `helper_id` sama dengan client | INV-05, FR-ORD-016 |
+| Quote hanya diterima dari helper pesanan itu, saat status `awaiting_quote`, sebelum `quote_deadline_at`, dan kalau belum ada baris `order_offers` | DEC-21 |
+| Persetujuan quote ditolak setelah `valid_until`, dan ditolak dengan `HELPER_HAS_ACTIVE_ORDER` kalau helper sudah memegang pesanan aktif | DEC-21, INV-06 |
+| Setelah satu pesanan helper menjadi `accepted`, pesanan lain ke helper itu yang masih `awaiting_quote` diubah menjadi `expired` dalam transaksi yang sama | FR-ORD-024 |
+| Ruang chat baru hanya bisa dibuka client, maksimal 20 per client per hari | FR-CHT-007, FR-CHT-010 |
+| Suspend ditolak kalau pengguna masih punya order berstatus `accepted` sampai `awaiting_confirmation`, atau `disputed`. Kalau lolos, seluruh order `awaiting_quote` miliknya sebagai client maupun helper menjadi `cancelled_by_admin` | DEC-22, DEC-26 |
+| Admin cancel hanya untuk order berstatus `accepted` sampai `awaiting_confirmation`, tidak untuk `disputed` | DEC-22 |
 | Voucher `fixed` ditolak kalau `min_order_amount < discount_value x 10`. Voucher `percentage` ditolak kalau `discount_value > 10` | DEC-23 |
-| Syarat voucher dicek terhadap `proposed_price` tawaran yang dipilih, bukan `client_estimated_price` | DEC-23 |
-| Sengketa hanya boleh diajukan kalau `service_category.is_dispute_eligible` bernilai true | DEC-10, DEC-20 |
+| Syarat voucher dicek terhadap `order_offers.proposed_price` saat client menyetujui quote, bukan `client_estimated_price` | DEC-23 |
+| Sengketa hanya boleh diajukan kalau `service_category.is_dispute_eligible` bernilai true | DEC-10 |
 | Transisi `arrived` ke `in_progress` pada kategori dengan `requires_pickup_photo` ditolak tanpa `order_attachment` bertipe `pickup_proof` | DEC-24 |
 | Transisi `in_progress` ke `awaiting_confirmation` pada kategori dengan `requires_proof_photo` ditolak tanpa `order_attachment` bertipe `completion_proof` | FR-ORD-013 |
 
@@ -518,18 +520,53 @@ Kolom `is_admin` pada `user` menandai akun admin. Akun admin dibuat lewat seeder
 
 ## 7. Turunan SA yang menunggu konfirmasi Kai
 
-Sebelas detail ini SA tambahkan saat menerapkan keputusan. Alasan tiap poin ada di `10_notulen-sinkronisasi-erd-final.md` bagian 6, nomor di tabel ini sama dengan nomor di notulen.
+Nomor 1 sampai 11 berasal dari `10_notulen-sinkronisasi-erd-final.md` bagian 6. Nomor 12 sampai 21 berasal dari `14_perubahan-model-marketplace.md` bagian 3, lengkap dengan alasannya.
 
-| No | Turunan | Lokasi |
-| --- | --- | --- |
-| 1 | `orders.client_estimated_price` terpisah dari komponen rentang acuan | Bagian 2.1 |
-| 2 | `price_adjustments.recognized_amount` dan `additional_hold_amount` | Bagian 2.3 |
-| 3 | `transaction_type` `advance_reimbursement` | Bagian 4 |
-| 4 | Status `partially_refunded` | Bagian 4 |
-| 5 | `disputes.client_refund_amount` dan `helper_release_amount` | Bagian 1 |
-| 6 | Voucher kembali pada pembatalan oleh helper dan admin cancel | `04` bagian 5 |
-| 7 | Kompensasi pembatalan maksimal `service_client_charge` | `04` bagian 5 |
-| 8 | Split: `helper_release = floor(held_amount / 2)` | Bagian 2.2 |
-| 9 | Tombol "Pesan Langsung" nonaktif kalau `max_advance_limit` helper kurang dari batas talangan | Bagian 5.3, FR-ORD-020 |
-| 10 | `service_category.requires_pickup_photo` dan `is_dispute_eligible` | Bagian 2.4 dan 3 |
-| 11 | `orders.offer_window_expires_at`, `helper_finished_at`, `cancellation_fee`, `vouchers.is_active`, `created_at` pada `disputes` dan `verification_requests`, unique `(order_id, helper_id)` pada `order_offers` | Bagian 1 dan 5.1 |
+| No | Turunan | Lokasi | Status per 19 Okt 2026 |
+| --- | --- | --- | --- |
+| 1 | `orders.client_estimated_price` terpisah dari komponen rentang acuan | Bagian 2.1 | Menunggu |
+| 2 | `price_adjustments.recognized_amount` dan `additional_hold_amount` | | Gugur, tabel dihapus (DEC-25) |
+| 3 | `transaction_type` `advance_reimbursement` | | Gugur (DEC-25) |
+| 4 | Status `partially_refunded` | Bagian 4 | Menunggu |
+| 5 | `disputes.client_refund_amount` dan `helper_release_amount` | Bagian 1 | Menunggu |
+| 6 | Voucher kembali pada pembatalan oleh helper dan admin cancel | `04` bagian 5 | Menunggu |
+| 7 | Kompensasi pembatalan maksimal `service_client_charge` | `04` bagian 5 | Menunggu |
+| 8 | Split: `helper_release = floor(held_amount / 2)` | Bagian 2.2 | Menunggu |
+| 9 | Tombol Pesan Langsung nonaktif karena batas talangan | | Gugur (DEC-25) |
+| 10 | `service_category.requires_pickup_photo` dan `is_dispute_eligible` | Bagian 2.5 dan 3 | Menunggu |
+| 11 | `orders.helper_finished_at`, `cancellation_fee`, `vouchers.is_active`, `created_at` pada `disputes` dan `verification_requests` | Bagian 1 | Menunggu. Bagian `offer_window_expires_at` diganti nomor 18, unique `(order_id, helper_id)` diganti nomor 17 |
+| 12 | `chat_rooms` per pasangan client dan helper | Bagian 2.4 | Baru, menunggu |
+| 13 | Hanya client yang membuka ruang chat baru | Bagian 2.4, 5.3 | Baru, menunggu |
+| 14 | `chat_messages.order_id` terisi otomatis | Bagian 2.4 | Baru, menunggu |
+| 15 | Pemberitahuan pembayaran di luar aplikasi dan batas 20 ruang chat per hari | Bagian 5.3, FR-CHT-009, FR-CHT-010 | Baru, menunggu |
+| 16 | `orders.helper_id` terisi sejak pesanan dibuat, `booking_type` dihapus | Bagian 2.5 | Baru, menunggu |
+| 17 | `order_offers` maksimal satu baris per pesanan, kolom dan nilai enum broadcast dihapus | Bagian 2.3 | Baru, menunggu |
+| 18 | `offer_window_expires_at` menjadi `quote_deadline_at` | Bagian 2.5 | Baru, menunggu |
+| 19 | Permintaan lain ke helper otomatis `expired` saat helper `accepted` | Bagian 5.3, FR-ORD-024 | Baru, menunggu |
+| 20 | Pesanan `expired` dikirim ulang ke helper lain sebagai pesanan baru | `06` API-ORD-13 | Baru, menunggu |
+| 21 | Larangan Personal soal belanja atas nama client | FR-ORD-022 | Baru, menunggu |
+
+## 8. Perubahan skema v0.3 ke v0.4 untuk migrasi
+
+Kalau Backend sudah membuat migrasi dari v0.3 atau dari `erd_final.md`, daftar ini adalah migrasi pembaliknya. Kalau belum, cukup buat migrasi langsung dari bagian 1.
+
+| Objek | Perubahan |
+| --- | --- |
+| Tabel `price_adjustments` | Dihapus |
+| `orders.booking_type` | Kolom dihapus |
+| `orders.advance_limit`, `orders.advance_actual` | Kolom dihapus |
+| `orders.offer_window_expires_at` | Diganti nama menjadi `quote_deadline_at` |
+| `orders.helper_id` | Menjadi `NOT NULL` |
+| `orders.created_at` | Ditambahkan, mengikuti timestamp bawaan Laravel |
+| `orders` | Constraint `chk_held_equals_charge` ditambahkan |
+| `order_offers.helper_id`, `order_offers.confirmation_expires_at` | Kolom dihapus |
+| `order_offers` | Unique `(order_id, helper_id)` diganti unique `(order_id)`, indeks `idx_order_offers_helper_status` dihapus |
+| `helper_profiles.max_advance_limit` | Kolom dihapus |
+| `service_categories.requires_advance` | Kolom dihapus, baris `food_run`, `moving`, dan `laundry` dihapus dari seed |
+| `chat_rooms.order_id`, `is_read_only`, `closed_at` | Kolom dihapus |
+| `chat_rooms.client_id`, `helper_profile_id`, `last_message_at`, `created_at` | Kolom ditambahkan, unique `(client_id, helper_profile_id)` |
+| `chat_messages.order_id` | Kolom ditambahkan, nullable |
+| Enum `order.status` | `searching`, `pending_confirmation`, `price_adjustment` dihapus |
+| Enum `offer_status` | `selected`, `not_selected`, `declined` dihapus |
+| Enum `attachment_type` | `receipt` dihapus |
+| Enum `transaction_type` | `advance_reimbursement` dihapus |

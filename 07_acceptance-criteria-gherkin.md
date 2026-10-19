@@ -1,6 +1,8 @@
 # Acceptance Criteria untuk QA
 
-Status dokumen: `REVIEW` v0.2, 28 September 2026, disesuaikan dengan DEC-14 sampai DEC-24. Ditulis dalam format Given When Then supaya bisa diturunkan langsung menjadi test case. Setiap skenario menyebut kode FR yang diuji agar keterlacakan terjaga.
+Status dokumen: `REVIEW` v0.3, 19 Oktober 2026, disesuaikan dengan DEC-25 sampai DEC-27 (`14_perubahan-model-marketplace.md`). Ditulis dalam format Given When Then supaya bisa diturunkan langsung menjadi test case. Setiap skenario menyebut kode FR yang diuji agar keterlacakan terjaga.
+
+Perubahan dari v0.2: skenario broadcast, konfirmasi 60 detik, dan struk talangan dihapus karena FR-nya sudah DEPRECATED. Skenario baru mencakup daftar helper, percakapan sebelum pesanan, dan alur permintaan sampai quote. Angka memakai contoh baku di `05_erd-draft.md` bagian 2.2: Household dengan quote Rp 50.000 dan voucher HEMAT2K Rp 2.000 (minimal pesanan Rp 20.000).
 
 ## 1. Registrasi dan verifikasi
 
@@ -35,17 +37,23 @@ Fitur: Registrasi akun
 
 ```gherkin
 Fitur: Menjadi helper
-  Skenario: Akun belum terverifikasi tidak bisa menerima pesanan
+  Skenario: Akun belum terverifikasi tidak tampil dan tidak bisa dipesan
     # FR-VER-004
-    Diberikan pengguna sudah mendaftar sebagai helper tetapi status verifikasinya sedang ditinjau
-    Ketika sistem mencari helper untuk sebuah pesanan baru di area yang sama
-    Maka pengguna tersebut tidak menerima tawaran pesanan
+    Diberikan Rian sudah mendaftar sebagai helper Household tetapi status verifikasinya sedang ditinjau
+    Ketika client di area yang sama membuka daftar helper Household
+    Maka Rian tidak muncul di daftar
+    Dan permintaan pesanan ke Rian lewat API ditolak dengan kode HELPER_NOT_AVAILABLE
+
+  Skenario: Calon helper memilih paling banyak tiga kategori
+    # FR-HLP-008
+    Diberikan Rian berada di layar pendaftaran helper
+    Ketika Rian memilih Delivery, Personal, dan Household
+    Maka sistem menerima pilihan tersebut
+    Dan layar tidak menampilkan kategori lain untuk dipilih
 ```
 
 ```gherkin
 Fitur: Pengajuan ulang verifikasi
-  # Baru 28 September 2026, DEC-14 nomor 7. Menggantikan skenario cooldown 2 menit
-
   Skenario: Pengajuan ulang langsung setelah ditolak
     # FR-VER-007
     Diberikan pengajuan verifikasi Rian ditolak admin dengan alasan foto KTP buram
@@ -60,149 +68,214 @@ Fitur: Pengajuan ulang verifikasi
     Maka sistem menolak dengan pesan bahwa pengajuan sebelumnya masih ditinjau
 ```
 
-## 2. Pembuatan pesanan, tawar harga, dan penahanan dana
+## 2. Mencari helper
 
-Direvisi 28 September 2026. Angka memakai contoh baku di `05_erd-draft.md` bagian 2.2: upah jasa Rp 20.000, voucher Rp 2.000, batas talangan Rp 50.000.
+Baru 19 Oktober 2026, DEC-25 dan DEC-26.
 
 ```gherkin
-Fitur: Membuat pesanan
-  Skenario: Rentang biaya acuan tampil sebelum pesanan dikirim
-    # FR-ORD-002
-    Diberikan client memilih kategori Food run dan mengisi alamat
-    Ketika client membuka ringkasan pesanan
-    Maka sistem menampilkan tarif dasar, biaya jarak, biaya layanan flat, dan rentang acuan
-    Dan menampilkan field harga estimasi upah jasa dan field batas talangan
+Fitur: Daftar helper yang relevan
+  Skenario: Beranda menampilkan tiga kategori
+    # FR-HLP-001
+    Diberikan client membuka beranda
+    Maka sistem menampilkan kategori Delivery, Personal, dan Household
+    Dan tidak menampilkan Food run, Moving, atau Laundry
 
-  Skenario: Batas talangan wajib untuk kategori bertalangan
-    # FR-ORD-001, DEC-17
-    Diberikan client memilih kategori Laundry
-    Ketika client mengirim pesanan tanpa batas talangan
-    Maka sistem menolak dengan kode ADVANCE_LIMIT_REQUIRED
+  Skenario: Memilih kategori membuka daftar helper tersaring
+    # FR-HLP-001, FR-HLP-002, FR-HLP-003
+    Diberikan helper Agus menguasai Household dan Delivery
+    Dan helper Dedi hanya menguasai Delivery
+    Ketika client menekan kategori Household
+    Maka sistem membuka daftar helper berisi Agus
+    Dan Dedi tidak muncul di daftar tersebut
+    Dan kartu Agus menampilkan rating, jumlah ulasan, jarak, tarif per jam, dan tag keahlian
+
+  Skenario: Helper yang mematikan ketersediaan tidak tampil
+    # FR-HLP-009
+    Diberikan helper Agus mematikan sakelar ketersediaan
+    Ketika client membuka daftar helper Household
+    Maka Agus tidak muncul di daftar
+
+  Skenario: Helper di luar radius tidak tampil
+    # FR-HLP-005
+    Diberikan helper Sari menguasai Household dan berada 12 kilometer dari lokasi aktif client
+    Ketika client membuka daftar helper Household
+    Maka Sari tidak muncul di daftar
+
+  Skenario: Helper yang sibuk tetap tampil tetapi tidak bisa dipesan
+    # FR-HLP-011, FR-ORD-017
+    Diberikan helper Agus sedang memegang pesanan berstatus in_progress
+    Ketika client membuka daftar helper Household
+    Maka kartu Agus menampilkan label sedang sibuk
+    Dan tombol Pesan pada halaman detail Agus tidak aktif
+    Dan tombol Chat pada halaman detail Agus tetap aktif
+
+  Skenario: Pengguna tidak melihat profil helper miliknya sendiri
+    # FR-ORD-016, INV-05
+    Diberikan Agus adalah helper terverifikasi yang sedang memakai aplikasi sebagai client
+    Ketika Agus membuka daftar helper Household
+    Maka profil helper milik Agus tidak muncul di daftar
+```
+
+## 3. Percakapan sebelum dan selama pesanan
+
+Baru 19 Oktober 2026, DEC-27.
+
+```gherkin
+Fitur: Chat dengan helper sebelum memesan
+  Skenario: Client memulai chat dari halaman detail helper
+    # FR-CHT-006, FR-CHT-007
+    Diberikan client Budi belum pernah menghubungi helper Agus
+    Ketika Budi menekan tombol Chat pada halaman detail Agus
+    Maka sistem membuat satu ruang percakapan untuk pasangan Budi dan Agus
+    Dan Budi bisa mengirim pesan tanpa membuat pesanan lebih dulu
+    Dan Agus menerima notifikasi pesan baru
+
+  Skenario: Ruang percakapan yang sama dipakai lagi
+    # FR-CHT-007, INV-16
+    Diberikan Budi sudah punya ruang percakapan dengan Agus
+    Ketika Budi menekan tombol Chat pada halaman detail Agus sekali lagi
+    Maka sistem membuka ruang percakapan yang sama
+    Dan tidak membuat ruang baru
+
+  Skenario: Helper tidak bisa membuka ruang percakapan baru
+    # FR-CHT-007
+    Diberikan helper Agus belum pernah dihubungi client Citra
+    Ketika Agus mencoba membuka ruang percakapan dengan Citra lewat API
+    Maka sistem menolak dengan kode CHAT_START_CLIENT_ONLY
+
+  Skenario: Permintaan pesanan tanpa chat membuat ruang percakapan otomatis
+    # FR-CHT-007
+    Diberikan Budi belum pernah chat dengan helper Dedi
+    Ketika Budi mengirim permintaan pesanan ke Dedi
+    Maka sistem membuat ruang percakapan Budi dan Dedi
+    Dan Dedi bisa bertanya lewat ruang itu sebelum mengirim quote
+
+  Skenario: Tombol Pesan helper ini di ruang percakapan
+    # FR-CHT-008, FR-ORD-001
+    Diberikan Budi sedang berada di ruang percakapan dengan Agus
+    Dan Agus tersedia dan tidak memegang pesanan aktif
+    Ketika Budi menekan tombol Pesan helper ini
+    Maka sistem membuka form permintaan pesanan dengan Agus sudah terisi sebagai helper tujuan
+
+  Skenario: Pemberitahuan pembayaran di luar aplikasi
+    # FR-CHT-009, NFR-SEC-04
+    Ketika Budi membuka ruang percakapan dengan Agus
+    Maka ruang percakapan menampilkan pemberitahuan bahwa pembayaran di luar TD-Wallet tidak dilindungi
+    Dan nomor telepon Agus tampil tersamar
+
+  Skenario: Batas ruang percakapan baru per hari
+    # FR-CHT-010
+    Diberikan Budi sudah membuka 20 ruang percakapan baru hari ini
+    Ketika Budi mencoba membuka ruang percakapan dengan helper ke-21
+    Maka sistem menolak dengan kode CHAT_ROOM_LIMIT_REACHED
+    Dan Budi tetap bisa mengirim pesan di ruang yang sudah ada
+
+  Skenario: Pesan selama pesanan ditandai nomor pesanan
+    # FR-ADM-005, turunan SA nomor 14
+    Diberikan Budi dan Agus punya pesanan TD-2942 berstatus in_progress
+    Ketika Agus mengirim pesan di ruang percakapan mereka
+    Maka pesan tersebut tersimpan dengan referensi pesanan TD-2942
+
+  Skenario: Pesan tampil cepat di perangkat lawan bicara
+    # NFR-PERF-04
+    Diberikan perangkat Budi dan perangkat Agus terhubung internet
+    Ketika Budi mengirim sepuluh pesan berturut turut
+    Maka setiap pesan tampil di perangkat Agus tidak lebih dari 5 detik setelah dikirim
+```
+
+## 4. Permintaan pesanan, quote, dan penahanan dana
+
+Direvisi 19 Oktober 2026 mengikuti DEC-26. Menggantikan fitur "Tawar harga dan pemilihan helper pada broadcast" dan fitur "Direct booking" versi v0.2.
+
+```gherkin
+Fitur: Mengirim permintaan pesanan
+  Skenario: Rentang biaya acuan tampil sebelum permintaan dikirim
+    # FR-ORD-002
+    Diberikan client membuka form permintaan pesanan ke Agus untuk kategori Household
+    Ketika client mengisi lokasi pengerjaan
+    Maka sistem menampilkan tarif dasar, biaya jarak, biaya layanan flat, dan rentang acuan
+    Dan form tidak memuat field batas talangan
 
   Skenario: Label lokasi pengerjaan untuk Household
     # FR-ORD-001, DEC-16
     Diberikan client memilih kategori Household
-    Ketika form pembuatan pesanan tampil
+    Ketika form permintaan pesanan tampil
     Maka form hanya memuat satu alamat berlabel lokasi pengerjaan
 
   Skenario: Daftar larangan tampil untuk kategori Personal
     # FR-ORD-022
     Diberikan client memilih kategori Personal
-    Ketika form pembuatan pesanan tampil
+    Ketika form permintaan pesanan tampil
     Maka sistem menampilkan lima jenis pekerjaan yang tidak termasuk Personal
-    Dan daftar itu memuat pekerjaan berbahaya atau berisiko tinggi terhadap keselamatan
+    Dan daftar itu memuat membelikan barang atau menangani uang tunai atas nama client
 
-  Skenario: Tidak ada tawaran sampai jendela berakhir
-    # FR-ORD-005
-    Diberikan pesanan broadcast berstatus searching
-    Ketika 300 detik berlalu tanpa ada tawaran
-    Maka status pesanan menjadi expired
-    Dan saldo client tidak pernah berubah sejak pesanan dibuat
-    Dan client menerima notifikasi dengan saran menaikkan harga estimasi
+  Skenario: Permintaan terkirim hanya ke helper pilihan
+    # FR-ORD-003D
+    Diberikan client memilih Agus dari daftar helper Household
+    Ketika client mengirim permintaan pesanan
+    Maka status pesanan menjadi awaiting_quote
+    Dan hanya Agus yang menerima notifikasi permintaan
+    Dan saldo client tidak berubah
+
+  Skenario: Permintaan ke helper dengan kategori yang tidak dikuasai ditolak
+    # FR-ORD-001
+    Diberikan Dedi hanya menguasai Delivery
+    Ketika client mengirim permintaan Household ke Dedi lewat API
+    Maka sistem menolak dengan kode HELPER_CATEGORY_MISMATCH
+
+  Skenario: Pengguna tidak bisa memesan dirinya sendiri
+    # FR-ORD-016, INV-05
+    Diberikan Agus adalah helper terverifikasi
+    Ketika Agus sebagai client mengirim permintaan pesanan ke profil helper miliknya lewat API
+    Maka sistem menolak dengan kode SELF_ORDER_NOT_ALLOWED
 ```
 
 ```gherkin
-Fitur: Tawar harga dan pemilihan helper pada broadcast
-  Skenario: Beberapa helper mengajukan tawaran berbeda
-    # FR-ORD-003, FR-ORD-003B, FR-ORD-006
-    Diberikan pesanan Food run berstatus searching dengan estimasi upah Rp 15.000 dan batas talangan Rp 50.000
-    Ketika helper A mengajukan upah Rp 23.000
-    Dan helper B mengajukan upah Rp 20.000
-    Maka client melihat dua tawaran dengan nominal dan profil masing masing
-    Dan helper B melihat upah bersih Rp 18.000 sebelum mengirim tawaran
-    Dan belum ada dana yang tertahan
+Fitur: Quote dan persetujuan
+  Skenario: Helper melihat upah bersih sebelum mengirim quote
+    # FR-ORD-006
+    Diberikan Agus menerima permintaan pesanan Household
+    Ketika Agus mengisi quote Rp 50.000
+    Maka aplikasi menampilkan komisi platform Rp 5.000 dan upah bersih Rp 45.000 sebelum quote dikirim
 
-  Skenario: Helper dengan batas talangan terlalu kecil tidak melihat pesanan
-    # FR-ORD-020, DEC-17
-    Diberikan helper C memiliki batas talangan maksimal Rp 30.000
-    Dan pesanan Food run memiliki batas talangan Rp 50.000
-    Ketika sistem menyiarkan pesanan
-    Maka helper C tidak menerima notifikasi pesanan tersebut
-    Dan tawaran dari helper C lewat API ditolak dengan kode HELPER_ADVANCE_LIMIT_TOO_LOW
+  Skenario: Client menyetujui quote dan dana ditahan
+    # FR-ORD-003D, FR-WLT-002, FR-WLT-011
+    Diberikan client memakai voucher HEMAT2K Rp 2.000 dengan minimal pesanan Rp 20.000
+    Dan Agus mengirim quote Rp 50.000 dalam 300 detik
+    Ketika client menyetujui quote dalam 300 detik sejak quote masuk
+    Maka saldo tersedia client berkurang Rp 48.000
+    Dan saldo tertahan client bertambah Rp 48.000
+    Dan status pesanan menjadi accepted tanpa konfirmasi ulang dari Agus
 
-  Skenario: Konfirmasi helper menahan jasa setelah voucher ditambah batas talangan
-    # FR-ORD-003C, FR-ORD-006B, FR-WLT-002, FR-WLT-011
-    Diberikan client memakai voucher Rp 2.000 dengan minimal pesanan Rp 20.000
-    Dan client memilih tawaran helper B senilai Rp 20.000
-    Ketika helper B mengonfirmasi ketersediaan dalam 60 detik
-    Maka saldo tersedia client berkurang Rp 68.000
-    Dan saldo tertahan client bertambah Rp 68.000
-    Dan status pesanan menjadi accepted
-
-  Skenario: Voucher tidak berlaku terhadap tawaran yang dipilih
+  Skenario: Voucher tidak berlaku terhadap quote
     # FR-WLT-011, DEC-23
     Diberikan client memakai voucher Rp 2.000 dengan minimal pesanan Rp 20.000
-    Ketika client memilih tawaran senilai Rp 18.000
-    Maka pemilihan tetap berjalan tanpa voucher
+    Ketika client menyetujui quote senilai Rp 18.000
+    Maka persetujuan tetap berjalan tanpa voucher
     Dan client menerima pemberitahuan bahwa voucher tidak memenuhi syarat
     Dan voucher tetap tersimpan untuk pesanan lain
 
   Skenario: Potongan voucher tidak melebihi komisi platform
     # FR-WLT-013, INV-11
     Diberikan voucher bernilai Rp 5.000 lolos syarat minimal pesanan
-    Ketika harga jasa tawaran terpilih Rp 50.000
+    Ketika client menyetujui quote Delivery Rp 50.000
     Maka potongan voucher Rp 5.000
     Dan upah bersih helper tetap Rp 45.000
 
-  Skenario: Helper terpilih tidak merespons konfirmasi
-    # FR-ORD-006B
-    Diberikan client memilih tawaran helper B
-    Ketika 60 detik berlalu tanpa konfirmasi dari helper B
-    Maka status pesanan kembali menjadi searching
-    Dan status tawaran helper B menjadi expired
-    Dan tidak ada dana yang tertahan
-
-  Skenario: Saldo client tidak cukup saat helper mengonfirmasi
-    # FR-WLT-002, FR-WLT-008
-    Diberikan saldo tersedia client Rp 21.500
-    Dan dana yang harus ditahan Rp 68.000
-    Ketika helper B mengonfirmasi ketersediaan
-    Maka sistem menolak dengan kode CLIENT_INSUFFICIENT_BALANCE
-    Dan status pesanan kembali menjadi searching
-    Dan client diberi tahu kekurangan saldo Rp 46.500
-    Dan tidak ada baris mutasi dompet yang tercipta
-
-  Skenario: Helper terpilih sudah mengambil pesanan lain
-    # INV-06
-    Diberikan client memilih tawaran helper B
-    Dan helper B baru saja dikonfirmasi pada pesanan lain
-    Ketika helper B mengonfirmasi pesanan ini
-    Maka sistem menolak dengan kode HELPER_HAS_ACTIVE_ORDER
-    Dan status pesanan kembali menjadi searching
-
-  Skenario: Pengguna tidak bisa menawar pesanannya sendiri
-    # FR-ORD-016, INV-05
-    Diberikan pengguna yang juga helper terverifikasi membuat pesanan sebagai client
-    Ketika pengguna tersebut mengajukan tawaran pada pesanannya sendiri
-    Maka sistem menolak dengan kode SELF_ORDER_NOT_ALLOWED
-
-  Skenario: Konfirmasi dikirim ulang karena jaringan buruk
-    # FR-WLT-009, INV-04
-    Diberikan helper menekan konfirmasi dan permintaan gagal karena waktu habis di jaringan
-    Ketika aplikasi mengirim ulang dengan idempotency key yang sama
-    Maka sistem mengembalikan hasil konfirmasi yang pertama
-    Dan tidak tercipta penahanan dana kedua
-```
-
-```gherkin
-Fitur: Direct booking
-  # Baru 28 September 2026, DEC-21
-
-  Skenario: Helper memberi quote dan client menyetujui
-    # FR-ORD-003D, FR-WLT-002
-    Diberikan client memesan langsung Delivery ke helper Agus
-    Dan status pesanan awaiting_quote
-    Ketika Agus mengirim quote Rp 50.000 dalam 300 detik
-    Dan client menyetujui quote dalam 300 detik sejak quote masuk
-    Maka dana client langsung ditahan tanpa konfirmasi ulang dari Agus
-    Dan status pesanan menjadi accepted
-
   Skenario: Helper tidak memberi quote
     # FR-ORD-003D
-    Diberikan pesanan direct berstatus awaiting_quote
-    Ketika 300 detik berlalu tanpa quote
+    Diberikan pesanan berstatus awaiting_quote
+    Ketika 300 detik berlalu tanpa quote dari helper
     Maka status pesanan menjadi expired
-    Dan client melihat tombol siarkan ke helper lain
+    Dan client melihat tombol Pilih helper lain
+
+  Skenario: Helper menolak permintaan
+    # FR-ORD-003D
+    Diberikan pesanan berstatus awaiting_quote tanpa quote
+    Ketika Agus menolak permintaan dengan alasan sedang di luar kota
+    Maka status pesanan menjadi expired
+    Dan riwayat status mencatat alasan penolakan
+    Dan jumlah pembatalan Agus tidak bertambah
 
   Skenario: Quote kedaluwarsa sebelum disetujui
     # FR-ORD-003D
@@ -211,95 +284,61 @@ Fitur: Direct booking
     Maka sistem menolak dengan kode QUOTE_EXPIRED
     Dan status pesanan menjadi expired
 
-  Skenario: Helper menolak permintaan quote
-    # FR-ORD-003D
-    Diberikan pesanan direct berstatus awaiting_quote
-    Ketika Agus menolak permintaan
-    Maka status tawaran menjadi declined dan status pesanan menjadi expired
+  Skenario: Saldo client tidak cukup saat menyetujui
+    # FR-WLT-002, FR-WLT-008
+    Diberikan saldo tersedia client Rp 21.500
+    Dan dana yang harus ditahan Rp 48.000
+    Ketika client menyetujui quote
+    Maka sistem menolak dengan kode WALLET_INSUFFICIENT_BALANCE
+    Dan client diberi tahu kekurangan saldo Rp 26.500
+    Dan quote tetap berlaku sampai masa berlakunya habis
+    Dan tidak ada baris mutasi dompet yang tercipta
 
-  Skenario: Siarkan ulang membuat pesanan broadcast baru
-    # FR-ORD-003D
-    Diberikan pesanan direct berstatus expired
-    Ketika client menekan siarkan ke helper lain
-    Maka sistem membuat pesanan baru berjenis broadcast dengan kategori, deskripsi, alamat, dan batas talangan yang sama
-    Dan pesanan lama tetap berstatus expired
+  Skenario: Pilih helper lain membuat pesanan baru
+    # FR-ORD-003D, turunan SA nomor 20
+    Diberikan pesanan TD-2942 ke Agus berstatus expired
+    Ketika client menekan Pilih helper lain dan memilih Dedi
+    Maka sistem membuat pesanan baru ke Dedi dengan kategori, deskripsi, alamat, waktu, dan voucher yang sama
+    Dan status pesanan baru awaiting_quote
+    Dan pesanan TD-2942 tetap berstatus expired
 
-  Skenario: Tombol pesan langsung nonaktif untuk helper yang sibuk
-    # FR-ORD-003D, FR-ORD-017
-    Diberikan helper Agus sedang memegang pesanan berstatus in_progress
-    Ketika client membuka profil Agus
-    Maka tombol pesan langsung tidak aktif
+  Skenario: Permintaan lain ke helper kedaluwarsa saat helper menerima satu pesanan
+    # FR-ORD-024, INV-06
+    Diberikan Agus mengirim quote ke Budi dan ke Citra
+    Ketika Budi menyetujui quote lebih dulu
+    Maka pesanan Budi berstatus accepted
+    Dan pesanan Citra berubah menjadi expired
+    Dan Citra menerima notifikasi dengan tombol Pilih helper lain
+
+  Skenario: Persetujuan bersamaan ke helper yang sama
+    # INV-06
+    Diberikan Agus mengirim quote ke Budi dan ke Citra
+    Ketika Budi dan Citra menyetujui pada detik yang hampir bersamaan
+    Maka hanya satu pesanan yang berstatus accepted
+    Dan persetujuan yang lain ditolak dengan kode HELPER_HAS_ACTIVE_ORDER tanpa dana tertahan
+
+  Skenario: Persetujuan dikirim ulang karena jaringan buruk
+    # FR-WLT-009, INV-04
+    Diberikan client menekan setuju dan permintaan gagal karena waktu habis di jaringan
+    Ketika aplikasi mengirim ulang dengan idempotency key yang sama
+    Maka sistem mengembalikan hasil persetujuan yang pertama
+    Dan tidak tercipta penahanan dana kedua
 ```
 
-## 3. Talangan pada Food run dan Laundry
-
-Direvisi 28 September 2026 mengikuti DEC-17, DEC-18, dan DEC-20. Skenario lama "client menolak penyesuaian, status menjadi disputed" dihapus.
-
-```gherkin
-Fitur: Struk talangan
-  Latar:
-    Diberikan pesanan Food run berstatus in_progress
-    Dan upah jasa Rp 20.000 tanpa voucher
-    Dan batas talangan Rp 50.000
-
-  Skenario: Struk dalam batas langsung diakui
-    # FR-ORD-014
-    Ketika helper mengunggah struk Rp 43.000
-    Maka status struk menjadi auto_approved
-    Dan status pesanan tetap in_progress
-    Dan client tidak perlu menyetujui apa pun
-
-  Skenario: Beberapa struk dalam batas
-    # FR-ORD-014, FR-ORD-019
-    Ketika helper mengunggah struk Rp 30.000 lalu struk Rp 13.000
-    Maka kedua struk berstatus auto_approved
-    Dan total talangan yang diakui Rp 43.000
-
-  Skenario: Struk melewati batas dan client menyetujui
-    # FR-ORD-014
-    Ketika helper mengunggah struk Rp 58.000
-    Maka status pesanan menjadi price_adjustment
-    Dan ketika client menyetujui
-    Maka sistem menahan dana tambahan Rp 8.000
-    Dan status pesanan kembali in_progress
-
-  Skenario: Struk melewati batas dan client menolak
-    # FR-ORD-014, FR-ORD-018, DEC-20
-    Ketika helper mengunggah struk Rp 58.000
-    Dan client menolak
-    Maka status pesanan kembali in_progress, bukan disputed
-    Dan talangan yang diakui hanya Rp 50.000
-    Dan helper dapat memilih melanjutkan atau membatalkan
-
-  Skenario: Struk kedua ditolak selama struk pertama menunggu
-    # FR-ORD-019, INV-13
-    Diberikan satu struk berstatus pending
-    Ketika helper mengunggah struk lain
-    Maka sistem menolak dengan kode ADJUSTMENT_PENDING_EXISTS
-
-  Skenario: Kategori tanpa talangan tidak menerima struk
-    # FR-ORD-014, DEC-18
-    Diberikan pesanan Moving berstatus in_progress
-    Ketika helper mengunggah struk
-    Maka sistem menolak dengan kode CATEGORY_HAS_NO_ADVANCE
-```
-
-## 4. Penyelesaian dan settlement
+## 5. Penyelesaian dan settlement
 
 ```gherkin
 Fitur: Menyelesaikan pesanan
-  Skenario: Settlement Food run dengan voucher
+  Skenario: Settlement Household dengan voucher
     # FR-ORD-010, FR-WLT-003, FR-WLT-013, INV-09, INV-12
-    Diberikan pesanan Food run berstatus awaiting_confirmation
-    Dan upah jasa Rp 20.000, voucher Rp 2.000, batas talangan Rp 50.000
-    Dan dana tertahan Rp 68.000
-    Dan talangan yang diakui Rp 43.000
+    Diberikan pesanan Household berstatus awaiting_confirmation
+    Dan quote Rp 50.000 dengan voucher Rp 2.000
+    Dan dana tertahan Rp 48.000
     Ketika client menekan tombol selesaikan pesanan
-    Maka helper menerima Rp 18.000 upah bersih dan Rp 43.000 penggantian talangan
-    Dan client menerima pengembalian Rp 7.000
-    Dan komisi bersih platform Rp 0
-    Dan penjumlahan dana ke helper, komisi bersih, dan pengembalian sama dengan Rp 68.000
-    Dan riwayat mutasi helper memuat upah bersih dan penggantian talangan sebagai dua baris terpisah
+    Maka helper menerima upah bersih Rp 45.000
+    Dan komisi bersih platform Rp 3.000
+    Dan client tidak menerima pengembalian
+    Dan penjumlahan dana ke helper, komisi bersih, dan pengembalian sama dengan Rp 48.000
     Dan status pesanan menjadi completed dalam waktu tidak lebih dari 5 detik
 
   Skenario: Settlement tanpa voucher
@@ -309,11 +348,17 @@ Fitur: Menyelesaikan pesanan
     Maka helper menerima Rp 34.200
     Dan komisi bersih platform Rp 3.800
 
-  Skenario: Pesanan wajib foto bukti sebelum ditandai selesai
+  Skenario: Delivery wajib foto bukti sebelum ditandai selesai
     # FR-ORD-013
-    Diberikan pesanan Laundry berstatus in_progress tanpa foto bukti penyelesaian
+    Diberikan pesanan Delivery berstatus in_progress tanpa foto bukti penyelesaian
     Ketika helper menandai pekerjaan selesai
     Maka sistem menolak dengan kode COMPLETION_PROOF_REQUIRED
+
+  Skenario: Household tidak wajib foto bukti
+    # FR-ORD-013
+    Diberikan pesanan Household berstatus in_progress tanpa foto bukti
+    Ketika helper menandai pekerjaan selesai
+    Maka status pesanan menjadi awaiting_confirmation
 
   Skenario: Client tidak merespons sampai batas waktu
     # FR-ORD-012
@@ -331,18 +376,19 @@ Fitur: Menyelesaikan pesanan
     Dan saldo helper tidak bertambah untuk kedua kalinya
 ```
 
-## 5. Pembatalan
+## 6. Pembatalan
 
-Direvisi 28 September 2026 mengikuti DEC-19. Skenario lama dengan "30 persen tarif dasar" diganti.
+Direvisi 19 Oktober 2026: status `searching` dan `pending_confirmation` hilang, skenario talangan dihapus.
 
 ```gherkin
 Fitur: Pembatalan pesanan
-  Skenario: Client membatalkan saat menunggu konfirmasi helper
+  Skenario: Client membatalkan saat menunggu quote
     # FR-ORD-011, FR-WLT-014
-    Diberikan pesanan berstatus pending_confirmation dengan voucher terpasang
+    Diberikan pesanan berstatus awaiting_quote dengan voucher terpasang dan quote berstatus submitted
     Ketika client membatalkan
     Maka tidak ada biaya pembatalan
     Dan voucher kembali ke client
+    Dan quote berubah menjadi withdrawn
 
   Skenario: Client membatalkan dalam masa tenggang
     # FR-ORD-011
@@ -354,10 +400,10 @@ Fitur: Pembatalan pesanan
 
   Skenario: Client membatalkan setelah masa tenggang
     # FR-ORD-011, FR-WLT-014
-    Diberikan pesanan Food run diterima 3 menit yang lalu dengan dana tertahan Rp 68.000 dan voucher Rp 2.000
+    Diberikan pesanan Household diterima 3 menit yang lalu dengan dana tertahan Rp 48.000 dan voucher Rp 2.000
     Ketika client membatalkan
     Maka helper menerima kompensasi Rp 5.000 tanpa potongan komisi
-    Dan client menerima kembali Rp 63.000
+    Dan client menerima kembali Rp 43.000
     Dan voucher hangus
 
   Skenario: Client membatalkan setelah helper berangkat
@@ -376,19 +422,12 @@ Fitur: Pembatalan pesanan
 
   Skenario: Helper membatalkan setelah menerima
     # FR-ORD-023, FR-WLT-014
-    Diberikan pesanan berstatus accepted dengan voucher terpasang
+    Diberikan pesanan Household berstatus in_progress dengan dana tertahan Rp 48.000 dan voucher terpasang
     Ketika helper membatalkan
-    Maka seluruh dana kembali ke client
+    Maka client menerima kembali Rp 48.000
     Dan voucher kembali ke client
+    Dan helper tidak menerima upah
     Dan jumlah pembatalan helper bertambah satu
-
-  Skenario: Helper membatalkan Food run setelah belanja dalam batas
-    # FR-ORD-023, DEC-19
-    Diberikan pesanan Food run berstatus in_progress dengan dana tertahan Rp 70.000
-    Dan struk Rp 30.000 sudah diakui
-    Ketika helper membatalkan
-    Maka helper menerima penggantian talangan Rp 30.000 dan tidak menerima upah
-    Dan client menerima kembali Rp 40.000
 
   Skenario: Sengketa ditolak untuk kategori selain Delivery
     # FR-ORD-018, DEC-10
@@ -397,9 +436,7 @@ Fitur: Pembatalan pesanan
     Maka sistem menolak dengan kode DISPUTE_NOT_ELIGIBLE
 ```
 
-## 5B. Foto penjemputan dan sengketa Delivery
-
-Baru 28 September 2026, DEC-24.
+## 7. Foto penjemputan dan sengketa Delivery
 
 ```gherkin
 Fitur: Bukti Delivery
@@ -418,7 +455,7 @@ Fitur: Bukti Delivery
     Dan dana tetap tertahan
 ```
 
-## 6. Penilaian satu arah
+## 8. Penilaian satu arah
 
 Tidak berubah sejak 28 Agustus 2026 (DEC-09).
 
@@ -444,9 +481,9 @@ Fitur: Penilaian satu arah
     Maka sistem menolak permintaan tersebut
 ```
 
-## 6B. Panel admin
+## 9. Panel admin
 
-Direvisi 28 September 2026 mengikuti DEC-22, DEC-23, dan DEC-24.
+Direvisi 19 Oktober 2026 mengikuti DEC-26 dan DEC-27.
 
 ```gherkin
 Fitur: Panel admin
@@ -468,6 +505,12 @@ Fitur: Panel admin
     Diberikan pengajuan verifikasi Helper berstatus pending
     Ketika admin menolak tanpa alasan
     Maka sistem menolak permintaan tersebut
+
+  Skenario: Admin melihat percakapan terkait sengketa
+    # FR-ADM-005
+    Diberikan sengketa pada pesanan Delivery TD-3110
+    Ketika admin membuka detail sengketa
+    Maka admin melihat foto penjemputan, foto bukti dari client, dan pesan chat yang bertanda TD-3110
 
   Skenario: Sengketa diputuskan berpihak pada helper
     # FR-ADM-006
@@ -497,20 +540,22 @@ Fitur: Panel admin
     Ketika admin men-suspend client tersebut
     Maka sistem menolak dengan kode USER_HAS_ACTIVE_ORDER
 
-  Skenario: Suspend berhasil membersihkan tawaran dan pesanan yang belum berjalan
+  Skenario: Suspend berhasil membatalkan permintaan yang belum berjalan
     # FR-ADM-009
-    Diberikan helper tidak memiliki pesanan aktif tetapi punya dua tawaran berstatus submitted
+    Diberikan helper tidak memiliki pesanan aktif tetapi menerima dua permintaan berstatus awaiting_quote
     Ketika admin men-suspend helper tersebut
-    Maka kedua tawaran menjadi withdrawn
+    Maka kedua permintaan menjadi cancelled_by_admin
+    Dan client kedua permintaan itu menerima notifikasi
     Dan seluruh sesi login helper dicabut
+    Dan ruang percakapan helper tetap tersimpan
 
-  Skenario: Admin membatalkan Food run yang sudah belanja
+  Skenario: Admin membatalkan pesanan yang sedang berjalan
     # FR-ADM-011, DEC-22
-    Diberikan pesanan Food run berstatus in_progress dengan dana tertahan Rp 68.000
-    Dan talangan sah yang diakui Rp 40.000
+    Diberikan pesanan Household berstatus in_progress dengan dana tertahan Rp 48.000 dan voucher terpasang
     Ketika admin membatalkan pesanan dengan alasan
-    Maka helper menerima penggantian Rp 40.000 tanpa kompensasi pembatalan
-    Dan client menerima kembali Rp 28.000
+    Maka client menerima kembali Rp 48.000
+    Dan helper tidak menerima kompensasi
+    Dan voucher kembali ke client
     Dan status pesanan menjadi cancelled_by_admin
 
   Skenario: Admin tidak bisa membatalkan pesanan yang disengketakan
@@ -531,10 +576,12 @@ Fitur: Panel admin
     Maka sistem menolak dengan kode VOUCHER_EXCEEDS_COMMISSION
 ```
 
-## 7. Catatan pengujian tambahan untuk QA
+## 10. Catatan pengujian tambahan untuk QA
 
-Data uji minimum yang perlu disiapkan mencakup satu akun client bersaldo besar, satu akun client bersaldo nol, dua akun helper terverifikasi dengan batas talangan maksimal berbeda (misalnya Rp 30.000 dan Rp 100.000), satu akun helper yang masih menunggu peninjauan, satu akun yang memegang dua peran sekaligus untuk menguji `INV-05`, dan satu pesanan pada setiap status untuk menguji transisi yang tidak sah.
+Data uji minimum yang perlu disiapkan mencakup satu akun client bersaldo besar, satu akun client bersaldo nol, tiga akun helper terverifikasi dengan kategori berbeda (misalnya Agus menguasai Household dan Delivery, Dedi hanya Delivery, Sari hanya Personal), satu helper yang sedang memegang pesanan aktif, satu helper di luar radius 10 km, satu akun helper yang masih menunggu peninjauan, satu akun yang memegang dua peran sekaligus untuk menguji `INV-05`, dan satu pesanan pada setiap status untuk menguji transisi yang tidak sah.
 
 Pengujian dompet sebaiknya selalu diakhiri dengan pemeriksaan rekonsiliasi, yaitu memastikan jumlah saldo tersedia ditambah saldo tertahan sama dengan hasil penjumlahan seluruh mutasi. Kalau angkanya meleset satu rupiah pun, ada cacat pada logika transaksi meskipun antarmuka terlihat normal.
 
-Pengujian waktu seperti konfirmasi helper 60 detik, jendela penawaran dan quote 300 detik, masa tenggang pembatalan 120 detik, dan konfirmasi otomatis 24 jam sebaiknya dilakukan dengan kemampuan memajukan waktu server di lingkungan pengujian, bukan dengan menunggu sungguhan. Ini perlu diminta ke BE sejak awal supaya tidak menjadi hambatan menjelang UAT.
+Pengujian waktu seperti batas quote 300 detik, masa berlaku quote 300 detik, masa tenggang pembatalan 120 detik, dan konfirmasi otomatis 24 jam sebaiknya dilakukan dengan kemampuan memajukan waktu server di lingkungan pengujian, bukan dengan menunggu sungguhan. Ini perlu diminta ke BE sejak awal supaya tidak menjadi hambatan menjelang UAT.
+
+Untuk percakapan, uji juga skenario dua peran: Agus memakai aplikasi sebagai client dan menghubungi helper lain, sementara Agus juga menerima chat sebagai helper. Kedua ruang harus terpisah karena pasangan client dan helper-nya berbeda.

@@ -1,5 +1,7 @@
 # Dokumentasi Keputusan Minggu 1 dan Dampaknya
 
+Catatan 19 Oktober 2026: dokumen ini disimpan sebagai jejak sejarah dan tidak diperbarui. Keputusan nomor 3 di bawah (tawar harga dua arah, DEC-05) sudah digantikan DEC-26, yaitu model marketplace tanpa broadcast. Rincian di `14_perubahan-model-marketplace.md`.
+
 Status dokumen: `REVIEW` v0.1, tanggal 19 Agustus 2026. Dokumen ini mencatat lima keputusan dari sesi sinkronisasi seluruh divisi, menjelaskan dampaknya ke artefak lain yang sudah dibuat, dan menandai bagian mana yang sudah saya perbarui langsung serta bagian mana yang masih menunggu jawaban lanjutan dari tim.
 
 ## 1. Ringkasan lima keputusan

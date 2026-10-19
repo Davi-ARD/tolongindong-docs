@@ -1,5 +1,7 @@
 # Notulen Sinkronisasi Pasca ERD Final
 
+Catatan 19 Oktober 2026: notulen ini disimpan sebagai jejak sejarah dan isinya tidak diubah. Sebagian keputusannya sudah tidak berlaku: DEC-14 nomor 2 dan nomor 10, DEC-17, DEC-18 bagian Laundry, DEC-20, serta tombol siarkan pada DEC-21, digantikan DEC-25 sampai DEC-27 di `14_perubahan-model-marketplace.md`. Turunan SA nomor 2, 3, dan 9 di bagian 6 gugur. Status terbaru turunan SA ada di `05_erd-draft.md` bagian 7.
+
 Status dokumen: `CONFIRMED`. Dokumen ini semula agenda diskusi, lalu SA mengisi kolom **Keputusan** dari hasil diskusi. Sesi A disetujui Backend, Sesi B diputuskan tim bersama Mentor. Keputusan di sini menjadi dasar pembaruan `02`, `03`, `04`, `05`, `06`, `07`, `11`, dan class diagram di `12`, dan tercatat di decision log README sebagai DEC-14 sampai DEC-24.
 
 | Field | Isi |

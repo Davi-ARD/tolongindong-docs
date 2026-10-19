@@ -1,12 +1,12 @@
 # Skenario Alur Pengguna
 
-Status dokumen: `REVIEW` v1.0, 28 September 2026. Naskah awal disusun Backend sebagai `scenario.md`, lalu SA menulis ulang mengikuti DEC-14 sampai DEC-24, terutama model talangan Food run yang memisahkan upah jasa dari uang belanja (DEC-17). Dokumen ini adalah narasi untuk UI/UX dan QA. Aturan resminya tetap hidup di `02_requirement-master-list.md` dan `04_dual-role-transaction-analysis.md`. Kalau narasi ini berbeda dengan dua file itu, dua file itulah yang benar.
+Status dokumen: `REVIEW` v2.0, 19 Oktober 2026. Versi 1.0 (28 September 2026) adalah penulisan ulang `scenario.md` dari Backend dengan Food run sebagai skenario utama. Versi 2.0 ditulis ulang mengikuti DEC-25 sampai DEC-27 (`14_perubahan-model-marketplace.md`): Food run, Moving, dan Laundry dihapus, client memilih helper sendiri dari daftar, dan client bisa chat helper sebelum memesan. Dokumen ini adalah narasi untuk UI/UX dan QA. Aturan resminya tetap hidup di `02_requirement-master-list.md` dan `04_dual-role-transaction-analysis.md`. Kalau narasi ini berbeda dengan dua file itu, dua file itulah yang benar.
 
 Semua angka uang sudah diuji terhadap rumus di `05_erd-draft.md` bagian 2.2.
 
-## 1. Skenario utama, Food run dari awal sampai selesai
+## 1. Skenario utama, Household dari mencari helper sampai selesai
 
-Budi adalah client yang ingin dibelikan makan siang lewat Food run. Agus adalah helper terverifikasi yang mengerjakannya.
+Budi adalah client yang ingin kamar kosnya dibersihkan. Agus adalah helper terverifikasi yang menguasai Household dan Delivery.
 
 ### Tahap 1, pendaftaran dan masuk aplikasi
 
@@ -22,85 +22,82 @@ Budi adalah client yang ingin dibelikan makan siang lewat Food run. Agus adalah 
 2. Budi memilih Rp 100.000. Karena dompet berjalan dalam mode simulasi, sistem langsung mengonfirmasi tanpa pembayaran sungguhan.
 3. Saldo tersedia Budi menjadi Rp 100.000 dan tercatat di riwayat mutasi.
 
-### Tahap 3, membuat pesanan Food run
+### Tahap 3, mencari helper
 
-1. Budi memilih kategori Food run di beranda.
-2. Budi mengisi deskripsi: "Tolong belikan Nasi Padang rendang 1 porsi di RM Sederhana, sambal dipisah."
-3. Titik jemput adalah lokasi RM Sederhana. Titik tujuan adalah alamat utama Budi, "Kos Budi, Kamar 12".
-4. Sistem menampilkan rentang acuan upah jasa, misalnya Rp 12.000 sampai Rp 25.000.
-5. Budi mengisi dua angka terpisah:
-   - Estimasi upah jasa: Rp 15.000.
-   - Batas talangan (uang belanja maksimal): Rp 50.000.
-6. Budi memasang voucher HEMAT2K, potongan Rp 2.000 dengan minimal pesanan Rp 20.000.
-7. Budi menekan "Pesan Sekarang". Status pesanan menjadi `searching` dan jendela penawaran terbuka 300 detik. Belum ada uang yang ditahan.
+1. Di beranda, Budi melihat tiga kategori: Delivery, Personal, dan Household. Budi menekan Household.
+2. Sistem membuka daftar helper Household. Isinya hanya helper terverifikasi yang sedang menyalakan ketersediaan, menguasai Household, dan berada dalam 10 km dari lokasi aktif Budi. Urutan bawaan adalah jarak terdekat.
+3. Setiap kartu menampilkan nama, rating, jumlah ulasan, jarak, tarif per jam, dan tag keahlian. Tarif per jam hanya gambaran, bukan harga pesanan.
+4. Satu helper bertanda "Sedang sibuk" karena sedang mengerjakan pesanan lain. Kartunya tetap muncul, tetapi tombol Pesan di halaman detailnya nonaktif.
+5. Budi membuka profil Agus: rating 4,8 dari 32 ulasan, 1,4 km, tarif Rp 25.000 per jam, menguasai Household dan Delivery.
 
-### Tahap 4, helper menawar
+### Tahap 4, chat sebelum memesan
 
-1. Agus sedang mengaktifkan ketersediaan dan punya batas talangan maksimal Rp 100.000, jadi dia menerima notifikasi. Helper lain dengan batas talangan maksimal Rp 30.000 tidak menerima notifikasi pesanan ini (FR-ORD-020).
-2. Agus membuka pesanan dan mengajukan upah jasa Rp 20.000. Sebelum mengirim, aplikasi menunjukkan:
-   - Upah jasa: Rp 20.000
-   - Komisi platform 10 persen: Rp 2.000
-   - Upah bersih: Rp 18.000
-   - Uang belanja sampai Rp 50.000 diganti penuh di luar upah
-3. Agus menekan "Kirim Penawaran".
-4. Dedi, helper lain, mengajukan upah Rp 23.000.
+1. Budi menekan "Chat". Sistem membuat ruang percakapan untuk pasangan Budi dan Agus.
+2. Di bagian atas ruang tampil pemberitahuan: pembayaran di luar TD-Wallet tidak dilindungi penahanan dana dan tidak bisa dibantu lewat sengketa. Nomor telepon Agus tampil tersamar.
+3. Budi menulis: "Mas, besok jam 9 bisa bersihkan kamar kos 3x4 m dan cuci piring? Kira kira berapa?"
+4. Agus membalas: "Bisa Mas. Sekitar Rp 50.000 ya, sudah termasuk cuci piring."
+5. Belum ada pesanan dan belum ada uang yang ditahan.
 
-### Tahap 5, Budi memilih dan dana ditahan
+### Tahap 5, mengirim permintaan pesanan
 
-1. Budi melihat dua tawaran beserta profil dan rating.
-2. Budi memilih tawaran Agus. Sistem mengecek voucher terhadap Rp 20.000. Syarat minimal Rp 20.000 terpenuhi, jadi voucher berlaku.
-3. Layar Budi menunjukkan rincian:
-   - Upah jasa: Rp 20.000
+1. Budi menekan "Pesan Agus" di ruang percakapan. Form permintaan terbuka dengan Agus dan kategori Household sudah terisi.
+2. Karena Household, form hanya meminta satu alamat berlabel "Lokasi pengerjaan". Budi memilih "Kos Budi, Kamar 12".
+3. Budi mengisi deskripsi "Bersihkan kamar kos 3x4 m dan cuci piring", waktu besok pukul 09.00, dan estimasi upah Rp 50.000 sesuai obrolan.
+4. Sistem menampilkan rentang biaya acuan sebagai pembanding.
+5. Budi memasang voucher HEMAT2K, potongan tetap Rp 2.000 dengan minimal pesanan Rp 20.000.
+6. Budi menekan "Kirim Permintaan". Status pesanan `awaiting_quote`. Agus punya 300 detik untuk memberi quote atau menolak. Belum ada uang yang ditahan.
+
+### Tahap 6, helper memberi quote
+
+1. Agus menerima notifikasi permintaan dan membuka detailnya.
+2. Agus mengisi quote Rp 50.000. Sebelum mengirim, aplikasi menunjukkan:
+   - Upah jasa: Rp 50.000
+   - Komisi platform 10 persen: Rp 5.000
+   - Upah bersih: Rp 45.000
+3. Agus menekan "Kirim Quote". Quote berlaku 300 detik.
+
+### Tahap 7, Budi menyetujui dan dana ditahan
+
+1. Budi melihat quote. Sistem mengecek voucher terhadap Rp 50.000. Syarat minimal Rp 20.000 terpenuhi, jadi voucher berlaku.
+2. Layar Budi menunjukkan rincian:
+   - Upah jasa: Rp 50.000
    - Voucher: minus Rp 2.000
-   - Jasa yang Budi bayar: Rp 18.000
-   - Batas talangan: Rp 50.000
-   - Total yang akan ditahan: Rp 68.000
-4. Status pesanan menjadi `pending_confirmation`. Agus menerima permintaan konfirmasi dengan batas 60 detik.
-5. Agus menekan "Saya Siap Berangkat".
-6. Sistem menahan Rp 68.000 dari saldo Budi. Saldo tersedia Budi tinggal Rp 32.000, saldo tertahan Rp 68.000.
-7. Tawaran Dedi otomatis ditutup. Status pesanan menjadi `accepted`, dan ruang chat Budi dengan Agus terbuka.
+   - Total yang akan ditahan: Rp 48.000
+3. Budi menekan "Setuju dan Bayar". Sistem menahan Rp 48.000 tanpa meminta Agus mengonfirmasi ulang. Saldo tersedia Budi tinggal Rp 52.000, saldo tertahan Rp 48.000.
+4. Status pesanan menjadi `accepted`. Kalau saat itu Agus juga sedang menunggu jawaban quote dari client lain, permintaan itu otomatis `expired` dan client tersebut diberi tahu untuk memilih helper lain (FR-ORD-024).
 
-### Tahap 6, pelaksanaan
+### Tahap 8, pelaksanaan
 
-1. Agus menekan "Menuju Lokasi Pembelian", status menjadi `on_the_way`.
-2. Di RM Sederhana, Agus menekan "Tiba di Lokasi" lalu "Mulai Mengerjakan", status menjadi `in_progress`.
-3. Agus bertanya lewat chat soal kuah, Budi menjawab.
-4. Agus membayar Rp 43.000 di kasir, memotret struk, dan mengunggahnya. Karena Rp 43.000 masih di bawah batas Rp 50.000, sistem langsung mengakui struk itu (`auto_approved`) tanpa menunggu Budi. Status pesanan tetap `in_progress`.
+1. Esok paginya Agus menekan "Berangkat", status menjadi `on_the_way`.
+2. Di kos Budi, Agus menekan "Tiba di Lokasi" lalu "Mulai Mengerjakan", status menjadi `in_progress`. Household tidak mewajibkan foto penjemputan.
+3. Agus bertanya lewat ruang percakapan yang sama soal tempat sampah. Pesan ini otomatis ditandai dengan nomor pesanan.
+4. Setelah selesai, Agus menekan "Selesaikan Pekerjaan". Status menjadi `awaiting_confirmation`. Household tidak mewajibkan foto bukti, berbeda dengan Delivery.
 
-### Tahap 7, pengantaran
+### Tahap 9, konfirmasi dan settlement
 
-1. Agus mengantar makanan ke kos Budi dan menyerahkannya bersama struk fisik.
-2. Agus memotret makanan di depan kamar sebagai bukti penyelesaian. Tanpa foto ini, tombol selesai ditolak sistem (FR-ORD-013).
-3. Agus menekan "Selesaikan Pekerjaan". Status menjadi `awaiting_confirmation`.
-
-### Tahap 8, konfirmasi dan settlement
-
-1. Budi menerima notifikasi untuk memeriksa pesanan.
+1. Budi menerima notifikasi untuk memeriksa pekerjaan.
 2. Budi menekan "Konfirmasi Selesai".
-3. Sistem menjalankan settlement dari dana tertahan Rp 68.000:
+3. Sistem menjalankan settlement dari dana tertahan Rp 48.000:
 
 | Komponen | Nominal |
 | --- | --- |
-| Upah bersih Agus | Rp 18.000 |
-| Penggantian talangan Agus | Rp 43.000 |
-| Total ke Agus | Rp 61.000 |
-| Komisi kotor platform | Rp 2.000 |
+| Upah bersih Agus | Rp 45.000 |
+| Komisi kotor platform | Rp 5.000 |
 | Dipakai menanggung voucher | Rp 2.000 |
-| Komisi bersih platform | Rp 0 |
-| Sisa batas talangan kembali ke Budi | Rp 7.000 |
-| Total | Rp 68.000 |
+| Komisi bersih platform | Rp 3.000 |
+| Kembali ke Budi | Rp 0 |
+| Total | Rp 48.000 |
 
-4. Saldo Agus bertambah Rp 61.000, tercatat sebagai dua baris mutasi: upah bersih dan penggantian talangan.
-5. Saldo tersedia Budi menjadi Rp 39.000. Budi membayar total Rp 61.000, yaitu Rp 18.000 jasa dan Rp 43.000 makanan.
-6. Status pesanan menjadi `completed`.
+4. Saldo Agus bertambah Rp 45.000. Saldo tersedia Budi tetap Rp 52.000, karena seluruh dana tertahan terpakai.
+5. Status pesanan menjadi `completed`.
 
-Voucher ditanggung platform dari komisinya, bukan dari upah Agus. Upah bersih Agus tetap Rp 18.000 dengan atau tanpa voucher.
+Voucher ditanggung platform dari komisinya, bukan dari upah Agus. Upah bersih Agus tetap Rp 45.000 dengan atau tanpa voucher.
 
-### Tahap 9, penilaian
+### Tahap 10, penilaian
 
 1. Budi memberi bintang 5 dan ulasan singkat.
 2. Rating rata rata Agus langsung diperbarui.
-3. Ruang chat menjadi baca saja tujuh hari kemudian.
+3. Ruang percakapan Budi dan Agus tetap terbuka. Kalau bulan depan Budi butuh Agus lagi, dia cukup membuka ruang yang sama.
 
 ## 2. Skenario alternatif dan kondisi khusus
 
@@ -109,69 +106,65 @@ Voucher ditanggung platform dari komisinya, bukan dari upah Agus. Upah bersih Ag
 Rian ingin mendapat penghasilan tambahan.
 
 1. Rian membuka Profil, lalu "Daftar Menjadi Helper".
-2. Rian memilih kategori Delivery dan Household.
-3. Rian mengisi batas talangan maksimal yang bersedia dia tanggung, misalnya Rp 100.000.
-4. Rian mengunggah foto KTP dan swafoto memegang KTP. Status pengajuan `pending`.
+2. Rian memilih kategori Delivery dan Household. Pilihan maksimal tiga kategori.
+3. Rian mengunggah foto KTP dan swafoto memegang KTP. Status pengajuan `pending`. Selama status ini, Rian belum muncul di daftar helper.
 
 **Kondisi A.1, ditolak karena foto buram.** Admin menolak dengan catatan "Foto KTP silau dan NIK tidak terbaca". Rian langsung memotret ulang dan mengirim lagi saat itu juga, tanpa masa tunggu (FR-VER-007). Sistem hanya menolak kalau Rian mencoba mengirim pengajuan baru selagi pengajuan sebelumnya masih `pending`.
 
-**Kondisi A.2, disetujui.** Status Rian menjadi `verified`, lencana terverifikasi muncul, dan sakelar "Terima Order" bisa dinyalakan.
+**Kondisi A.2, disetujui.** Status Rian menjadi `verified`, lencana terverifikasi muncul, dan sakelar "Terima Pesanan" bisa dinyalakan. Begitu sakelar menyala, Rian muncul di daftar helper Delivery dan Household.
 
-### Skenario B, direct booking
+### Skenario B, helper tidak merespons atau menolak
 
-Budi puas dengan Agus dan ingin memesan Agus lagi untuk mengantar dokumen (Delivery).
+Budi mengirim permintaan Delivery ke Agus untuk mengantar dokumen, tetapi Agus sedang di luar kota.
 
-1. Budi membuka profil Agus dan menekan "Pesan Langsung". Tombol ini hanya aktif kalau Agus tersedia, tidak sedang memegang pesanan aktif, dan batas talangan maksimalnya cukup.
-2. Budi mengisi detail dan mengirim. Status pesanan `awaiting_quote`. Pesanan tidak disiarkan ke helper lain.
-3. Agus punya 300 detik untuk memberi quote. Agus mengirim quote upah Rp 30.000 dan melihat upah bersihnya Rp 27.000.
-4. Budi melihat quote dan punya 300 detik untuk menyetujui.
-5. Budi menekan "Setuju dan Bayar". Sistem langsung menahan Rp 30.000 tanpa meminta Agus mengonfirmasi ulang. Status menjadi `accepted`.
+1. Agus menekan "Tolak" dan menulis alasan "Sedang di luar kota". Status pesanan menjadi `expired`. Penolakan ini tidak menambah catatan pembatalan Agus.
+2. Kalau Agus tidak membuka aplikasi sama sekali, hasilnya sama setelah 300 detik lewat.
+3. Budi melihat tombol "Pilih helper lain". Sistem membuka daftar helper Delivery.
+4. Budi memilih Dedi. Sistem membuat pesanan baru ke Dedi dengan deskripsi, alamat, waktu, dan voucher yang sama. Pesanan lama ke Agus tetap `expired`.
 
-**Kalau gagal.** Kalau Agus tidak memberi quote dalam 300 detik, menolak permintaan, atau Budi tidak menyetujui quote dalam 300 detik, pesanan menjadi `expired`. Budi melihat tombol "Siarkan ke helper lain" yang membuat pesanan broadcast baru dengan data yang sama. Budi tidak bisa menawar balik quote Agus pada versi ini.
+### Skenario C, quote tidak sesuai obrolan
 
-### Skenario C, belanja melewati batas talangan
+Di chat, Agus menyebut sekitar Rp 50.000. Saat quote masuk, angkanya Rp 70.000.
 
-Budi memesan Food run dengan upah jasa Rp 15.000 dan batas talangan Rp 30.000. Di toko, total belanja ternyata Rp 42.000.
+1. Budi tidak bisa menawar balik di layar quote.
+2. Budi bisa bertanya lewat ruang percakapan yang sama, misalnya "Kok jadi 70 ribu, Mas?".
+3. Kalau tetap tidak cocok, Budi membiarkan quote kedaluwarsa setelah 300 detik atau membatalkan permintaan. Pembatalan pada `awaiting_quote` gratis dan voucher kembali.
+4. Budi lalu memilih helper lain lewat tombol "Pilih helper lain".
 
-1. Aplikasi mendorong Agus mengajukan penyesuaian sebelum membayar di kasir, karena belanja di atas batas tidak dijamin tanpa persetujuan Budi.
-2. Agus memotret daftar harga atau struk sementara, lalu mengunggah nominal Rp 42.000. Status pesanan menjadi `price_adjustment`.
-3. Agus tidak bisa mengunggah struk lain selama pengajuan ini belum dijawab (FR-ORD-019).
+### Skenario D, satu helper dipesan dua client
 
-**Kalau Budi menyetujui.** Sistem menahan tambahan Rp 12.000. Dana tertahan menjadi Rp 57.000 dan status kembali `in_progress`. Saat selesai, Agus menerima Rp 13.500 upah bersih ditambah Rp 42.000 talangan, total Rp 55.500. Komisi platform Rp 1.500. Tidak ada sisa yang kembali ke Budi.
+Agus menerima permintaan dari Budi dan dari Citra pada pagi yang sama, dan mengirim quote ke keduanya.
 
-**Kalau Budi menolak.** Status kembali `in_progress`, bukan `disputed` (DEC-20). Agus hanya dijamin penggantian sampai batas Rp 30.000. Agus bisa berdiskusi lewat chat lalu belanja dalam batas lama, atau membatalkan pesanan. Kalau Agus sudah terlanjur membayar Rp 42.000, selisih Rp 12.000 menjadi risikonya.
+1. Budi menyetujui lebih dulu. Dana Budi ditahan dan pesanan Budi menjadi `accepted`.
+2. Pada transaksi yang sama, pesanan Citra berubah menjadi `expired`. Citra menerima notifikasi bahwa helper sudah menerima pesanan lain, lengkap dengan tombol "Pilih helper lain".
+3. Kalau Citra menekan setuju pada detik yang hampir bersamaan, sistem menolak dengan `HELPER_HAS_ACTIVE_ORDER` dan tidak menahan dana Citra.
 
-### Skenario D, pembatalan
+### Skenario E, pembatalan
 
-**Kasus 1, Budi batal saat mencari helper.** Status `searching`, belum ada dana tertahan. Batal gratis dan voucher kembali.
+**Kasus 1, Budi batal saat menunggu quote.** Status `awaiting_quote`, belum ada dana tertahan. Batal gratis, voucher kembali, dan quote yang sudah masuk berubah menjadi `withdrawn`.
 
-**Kasus 2, tidak ada tawaran selama 300 detik.** Status menjadi `expired`. Sistem menyarankan Budi menaikkan estimasi upah.
+**Kasus 2, Budi batal tak lama setelah menyetujui.** Kalau kurang dari 120 detik sejak `accepted`, batal gratis dan voucher kembali. Kalau sudah 3 menit, pada contoh Tahap 7 dengan dana tertahan Rp 48.000, Agus menerima kompensasi Rp 5.000 utuh tanpa potongan komisi, Budi menerima kembali Rp 43.000, dan voucher hangus.
 
-**Kasus 3, Budi batal tak lama setelah Agus menerima.** Kalau kurang dari 120 detik sejak `accepted`, batal gratis dan voucher kembali. Kalau sudah 3 menit, pada contoh Tahap 5 dengan dana tertahan Rp 68.000, Agus menerima kompensasi Rp 5.000 utuh tanpa potongan komisi, Budi menerima kembali Rp 63.000, dan voucher hangus.
+**Kasus 3, Budi batal saat helper sudah jalan.** Pada Delivery dengan quote Rp 40.000 dan voucher Rp 4.000, dana tertahan Rp 36.000. Helper sedang `on_the_way`. Sebelum menekan batal, Budi melihat pratinjau: helper menerima 25 persen dari Rp 40.000, yaitu Rp 10.000, dan Budi menerima kembali Rp 26.000. Voucher hangus.
 
-**Kasus 4, Budi batal saat Agus sudah jalan.** Pada Delivery dengan upah Rp 40.000 dan voucher Rp 4.000, dana tertahan Rp 36.000. Agus sedang `on_the_way`. Sebelum menekan batal, Budi melihat pratinjau: Agus menerima 25 persen dari Rp 40.000, yaitu Rp 10.000, dan Budi menerima kembali Rp 26.000. Voucher hangus.
+**Kasus 4, Budi ingin batal saat pekerjaan berjalan.** Status `in_progress`. Tombol batal tidak tersedia untuk client.
 
-**Kasus 5, Budi ingin batal saat pekerjaan berjalan.** Status `in_progress`. Tombol batal tidak tersedia untuk client.
+**Kasus 5, Agus membatalkan.** Agus mendadak sakit setelah mulai bekerja. Dana jasa Budi Rp 48.000 kembali penuh, voucher kembali, dan catatan pembatalan Agus bertambah satu. Agus tidak menerima upah.
 
-**Kasus 6, Agus membatalkan.** Motor Agus mogok setelah menerima pesanan. Dana jasa Budi kembali penuh, voucher kembali, dan catatan pembatalan Agus bertambah satu. Kalau Agus sudah belanja dalam batas dan struknya sudah diakui, misalnya Rp 30.000, Agus tetap menerima penggantian Rp 30.000, tetapi tidak menerima upah.
+### Skenario F, Budi lupa menekan konfirmasi
 
-### Skenario E, Budi lupa menekan konfirmasi
-
-Agus sudah menandai selesai, tetapi Budi tidak membuka aplikasi. Setelah 24 jam tanpa konfirmasi dan tanpa sengketa, sistem mengonfirmasi otomatis dan settlement berjalan seperti Tahap 8.
-
-### Skenario F, helper terpilih tidak merespons
-
-Budi memilih tawaran Helper C, tetapi Helper C tidak menekan konfirmasi dalam 60 detik. Tawaran Helper C menjadi `expired`, status pesanan kembali `searching`, dan dana Budi belum dipotong sama sekali. Budi memilih tawaran lain yang masih berlaku.
+Agus sudah menandai selesai, tetapi Budi tidak membuka aplikasi. Setelah 24 jam tanpa konfirmasi dan tanpa sengketa, sistem mengonfirmasi otomatis dan settlement berjalan seperti Tahap 9.
 
 ### Skenario G, sengketa Delivery
 
-Budi memakai Delivery untuk mengirim kue tart. Upah jasa Rp 60.000 tanpa voucher, dana tertahan Rp 60.000.
+Budi memakai Delivery untuk mengirim kue tart. Quote Rp 60.000 tanpa voucher, dana tertahan Rp 60.000.
 
 1. Saat menjemput kue, Agus wajib memotret kondisi kue sebelum menekan "Mulai Mengerjakan". Tanpa foto ini, sistem menolak perubahan status (FR-ORD-021).
-2. Penerima mendapati kue hancur. Dalam 24 jam sejak Agus menandai selesai, Budi menekan "Ajukan Sengketa", menulis alasan, dan melampirkan foto.
-3. Status menjadi `disputed` dan dana tetap tertahan.
-4. Admin membandingkan foto penjemputan dengan foto dari Budi, lalu membaca riwayat chat.
-5. Admin memilih satu dari tiga keputusan dan wajib mengisi catatan:
+2. Setelah mengantar, Agus wajib memotret kue di tujuan sebelum menekan "Selesaikan Pekerjaan" (FR-ORD-013).
+3. Penerima mendapati kue hancur. Dalam 24 jam sejak Agus menandai selesai, Budi menekan "Ajukan Sengketa", menulis alasan, dan melampirkan foto.
+4. Status menjadi `disputed` dan dana tetap tertahan.
+5. Admin membandingkan foto penjemputan dengan foto dari Budi, lalu membaca pesan chat yang bertanda nomor pesanan itu.
+6. Admin memilih satu dari tiga keputusan dan wajib mengisi catatan:
 
 | Keputusan | Ke Agus | Ke Budi | Komisi platform | Status akhir |
 | --- | --- | --- | --- | --- |
@@ -181,15 +174,15 @@ Budi memakai Delivery untuk mengirim kue tart. Upah jasa Rp 60.000 tanpa voucher
 
 Admin tidak mengetik persentase pembagian. Pilihan split selalu 50:50 dari dana tertahan, tanpa komisi.
 
-Sengketa hanya tersedia untuk Delivery. Pada kategori lain, tombol "Ajukan Sengketa" tidak muncul.
+Sengketa hanya tersedia untuk Delivery. Pada Personal dan Household, tombol "Ajukan Sengketa" tidak muncul.
 
 ### Skenario H, suspend akun
 
-Seorang pengguna dilaporkan berkata kasar. Admin membuka profilnya dan menekan "Bekukan Akun".
+Seorang helper dilaporkan berkata kasar. Admin membuka profilnya dan menekan "Bekukan Akun".
 
-**Kalau masih ada pesanan aktif.** Sistem memeriksa apakah pengguna punya pesanan berstatus `pending_confirmation` sampai `awaiting_confirmation`, atau `disputed`, baik sebagai client maupun helper. Kalau ada, sistem menolak dan menampilkan daftar nomor pesanan itu. Admin harus menunggu pesanan selesai, memutuskan sengketanya, atau membatalkannya lewat Skenario J.
+**Kalau masih ada pesanan aktif.** Sistem memeriksa apakah pengguna punya pesanan berstatus `accepted` sampai `awaiting_confirmation`, atau `disputed`, baik sebagai client maupun helper. Kalau ada, sistem menolak dan menampilkan daftar nomor pesanan itu. Admin harus menunggu pesanan selesai, memutuskan sengketanya, atau membatalkannya lewat Skenario J.
 
-**Kalau tidak ada pesanan aktif.** Akun dibekukan. Sistem menarik semua tawaran pengguna yang masih diajukan, membatalkan pesanan client miliknya yang masih mencari helper atau menunggu quote, dan mencabut semua sesi login.
+**Kalau tidak ada pesanan aktif.** Akun dibekukan. Sistem membatalkan seluruh permintaan `awaiting_quote` yang ditujukan ke helper itu maupun yang dia buat sebagai client, memberi tahu client terkait, dan mencabut semua sesi login. Ruang percakapan tidak dihapus, tetapi tidak bisa dipakai sampai akun diaktifkan kembali.
 
 ### Skenario I, admin menerbitkan voucher
 
@@ -201,20 +194,28 @@ Seorang pengguna dilaporkan berkata kasar. Admin membuka profilnya dan menekan "
 
 Manajemen voucher berprioritas Should. Untuk demo, voucher boleh berasal dari data seed.
 
-### Skenario J, admin membatalkan pesanan Food run
+### Skenario J, admin membatalkan pesanan yang sedang berjalan
 
-Admin perlu membekukan akun Agus, tetapi Agus sedang mengerjakan Food run milik Budi. Upah jasa Rp 20.000, voucher Rp 2.000, batas talangan Rp 50.000, dana tertahan Rp 68.000, dan Agus sudah belanja Rp 40.000 dengan struk yang diakui.
+Admin perlu membekukan akun Agus, tetapi Agus sedang mengerjakan pesanan Household milik Budi dengan quote Rp 50.000, voucher Rp 2.000, dan dana tertahan Rp 48.000.
 
 1. Admin membuka pesanan dan menekan "Batalkan Pesanan", lalu mengisi alasan.
-2. Sistem mengganti talangan sah Agus Rp 40.000, tanpa kompensasi pembatalan dan tanpa upah.
-3. Budi menerima kembali Rp 28.000, dan voucher Budi kembali.
-4. Status pesanan menjadi `cancelled_by_admin`. Tindakan tercatat di log admin.
-5. Setelah itu admin bisa membekukan akun Agus.
+2. Budi menerima kembali Rp 48.000 dan voucher Budi kembali. Agus tidak menerima kompensasi maupun upah.
+3. Status pesanan menjadi `cancelled_by_admin`. Tindakan tercatat di log admin.
+4. Setelah itu admin bisa membekukan akun Agus.
 
 Admin tidak bisa memakai tombol ini untuk pesanan `disputed`. Pesanan sengketa diselesaikan lewat keputusan sengketa di Skenario G.
 
-### Skenario K, Laundry dan Personal
+### Skenario K, Personal
 
-**Laundry.** Budi memesan Laundry dengan upah Rp 15.000 dan batas talangan Rp 40.000. Agus menjemput pakaian, membawanya ke penyedia laundry kiloan, membayar Rp 28.000 dengan talangan, mengunggah struk, lalu mengambil dan mengantar pakaian kembali. Settlement mengikuti pola Food run: Agus menerima upah bersih Rp 13.500 ditambah talangan Rp 28.000, dan sisa batas Rp 12.000 kembali ke Budi. Agus tidak mencuci sendiri.
+Saat Budi memilih Personal, form menampilkan lima jenis pekerjaan yang tidak termasuk kategori ini: jasa yang butuh sertifikasi atau izin, mengangkut penumpang, membelikan barang atau menangani uang tunai atas nama client, aktivitas melanggar hukum, dan pekerjaan berbahaya atau berisiko tinggi seperti bekerja di atap. Form hanya meminta satu alamat berlabel "Lokasi pengerjaan".
 
-**Personal.** Saat Budi memilih Personal, form menampilkan lima jenis pekerjaan yang tidak termasuk kategori ini: jasa yang butuh sertifikasi atau izin, mengangkut penumpang, menangani uang tunai pihak lain di luar talangan tercatat, aktivitas melanggar hukum, dan pekerjaan berbahaya atau berisiko tinggi seperti bekerja di atap. Form hanya meminta satu alamat berlabel "Lokasi pengerjaan".
+Larangan ketiga penting sejak Food run dihapus. Tanpa larangan itu, client bisa memakai Personal untuk minta dibelikan makanan, padahal sistem tidak lagi punya mekanisme talangan dan struk untuk melindungi uang helper.
+
+### Skenario L, chat tanpa jadi memesan
+
+Budi ingin membandingkan tiga helper Household sebelum memilih.
+
+1. Budi membuka ruang percakapan dengan Agus, Sari, dan Dedi, lalu menanyakan hal yang sama ke ketiganya.
+2. Budi memesan Agus. Ruang percakapan dengan Sari dan Dedi tetap ada tanpa pesanan.
+3. Sistem membatasi Budi membuka maksimal 20 ruang percakapan baru per hari, supaya helper tidak dibanjiri chat tanpa niat memesan.
+4. Sari tetap bisa mengirim pesan di ruang yang sudah Budi buka, tetapi Sari tidak bisa membuka ruang baru ke client lain yang belum pernah menghubunginya.

@@ -1,0 +1,24 @@
+sequenceDiagram
+    actor C as Client
+    participant API as OrderController
+    participant SC as Settlement<br/>Calculator
+    participant ES as EscrowService
+    participant SM as OrderStateMachine
+    participant DB as PostgreSQL
+    actor H as Helper
+    H->>API: POST /orders/{id}/status {awaiting_confirmation}
+    API->>SM: transition(order, awaiting_confirmation)
+    SM->>DB: Cek foto bukti bila kategori mewajibkan, simpan helper_finished_at
+    API-->>C: Notifikasi minta konfirmasi, batas 24 jam
+    C->>API: POST /orders/{id}/confirm + X-Idempotency-Key
+    API->>SC: completion(order)
+    SC-->>API: helper_payout, platform_commission, client_refund
+    Note over SC: assertBalanced: helper_release + komisi + refund = held_amount
+    API->>ES: settle(order, result, key)
+    ES->>DB: BEGIN, kunci dompet client dan helper
+    ES->>DB: Kurangi held_balance client, tambah available_balance helper, INSERT release
+    ES->>DB: Simpan platform_commission dan helper_payout di orders
+    API->>SM: transition(order, completed)
+    ES->>DB: COMMIT
+    API-->>C: 200 completed, form penilaian
+    API-->>H: Notifikasi dana dilepas

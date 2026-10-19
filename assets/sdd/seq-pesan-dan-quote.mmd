@@ -1,0 +1,34 @@
+sequenceDiagram
+    actor C as Client
+    participant API as API Controller
+    participant OS as OrderService
+    participant FS as OfferService
+    participant VS as VoucherService
+    participant ES as EscrowService
+    participant SM as OrderStateMachine
+    participant DB as PostgreSQL
+    actor H as Helper
+    C->>API: POST /orders {helper_id, kategori, alamat, estimasi, voucher}
+    API->>OS: create(client, data)
+    OS->>DB: Cek helper verified, available, tidak sibuk, menguasai kategori
+    OS->>DB: INSERT orders status awaiting_quote, quote_deadline_at = now + 300 detik
+    OS-->>API: order
+    API-->>C: 201 awaiting_quote
+    API-->>H: Notifikasi permintaan pesanan
+    H->>API: POST /orders/{id}/offers {proposed_price}
+    API->>FS: submitQuote(order, helper, price)
+    FS->>DB: INSERT order_offers submitted, valid_until = now + 300 detik
+    API-->>C: Notifikasi quote masuk
+    C->>API: POST /orders/{id}/offers/{offer_id}/select + X-Idempotency-Key
+    API->>FS: approve(order, offer, key)
+    FS->>DB: BEGIN, kunci baris helper dan dompet client
+    FS->>VS: validateOnApproval(order, proposed_price)
+    VS-->>FS: diskon voucher, maksimal komisi kotor
+    FS->>ES: hold(order, key)
+    ES->>DB: Kurangi available_balance, tambah held_balance, INSERT wallet_transactions hold
+    FS->>SM: transition(order, accepted)
+    SM->>DB: UPDATE orders, INSERT order_status_history
+    FS->>DB: Permintaan lain ke helper yang masih awaiting_quote menjadi expired
+    FS->>DB: COMMIT
+    API-->>C: 200 accepted, held_amount
+    API-->>H: Notifikasi pesanan diterima

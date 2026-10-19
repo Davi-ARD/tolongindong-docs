@@ -1,0 +1,31 @@
+sequenceDiagram
+    actor C as Client
+    participant M as Aplikasi Mobile
+    participant API as ChatController
+    participant CS as ChatService
+    participant DB as PostgreSQL
+    participant N as NotificationService
+    actor H as Helper
+    C->>M: Tekan Chat di detail helper
+    M->>API: POST /chats {helper_id}
+    API->>CS: openRoom(client, helper)
+    CS->>DB: Cari chat_rooms (client_id, helper_profile_id)
+    alt Ruang sudah ada
+        DB-->>CS: Ruang lama
+    else Ruang belum ada
+        CS->>DB: Hitung ruang baru client hari ini
+        alt Sudah 20 ruang
+            CS-->>API: CHAT_ROOM_LIMIT_REACHED
+            API-->>M: 429
+        else Masih di bawah batas
+            CS->>DB: INSERT chat_rooms
+        end
+    end
+    CS-->>API: room
+    API-->>M: 200 atau 201, room_id, pemberitahuan pembayaran
+    C->>M: Tulis pertanyaan
+    M->>API: POST /chats/{room_id}/messages
+    API->>CS: send(room, client, content)
+    CS->>DB: INSERT chat_messages (order_id kosong sebelum pesanan)
+    CS->>N: notify(helper, chat_message)
+    N-->>H: Notifikasi pesan baru
