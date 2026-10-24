@@ -1,6 +1,6 @@
 # Perubahan Model Pemesanan Menjadi Marketplace
 
-Status dokumen: `CONFIRMED` untuk tiga keputusan di bagian 1, `REVIEW` untuk turunan SA di bagian 3. Tanggal 19 Oktober 2026.
+Status dokumen: `CONFIRMED` untuk tiga keputusan di bagian 1 dan untuk turunan SA di bagian 3 (dikonfirmasi Backend 24 Oktober 2026, DEC-28). Tanggal 19 Oktober 2026, diperbarui 24 Oktober 2026.
 
 Dokumen ini mencatat perubahan lingkup final yang diterima SA pada 19 Oktober 2026 tanpa perlu keputusan tim lagi, menjelaskan bentuk alur baru, dan memetakan dampaknya ke setiap artefak. Fungsinya sama dengan `09_dokumentasi-keputusan-minggu-1.md` dan `10_notulen-sinkronisasi-erd-final.md`: satu tempat untuk melacak kenapa banyak dokumen berubah sekaligus.
 
@@ -35,7 +35,7 @@ Dibanding model lama, ada tiga hal yang hilang. Client tidak lagi menunggu tawar
 
 Ada juga yang bertambah. Daftar helper kini menjadi pintu masuk pemesanan, jadi halaman detail helper naik prioritas menjadi Must. Chat menjadi milik pasangan client dan helper, bukan milik satu pesanan.
 
-## 3. Turunan SA yang menunggu konfirmasi Backend
+## 3. Turunan SA (dikonfirmasi Backend 24 Oktober 2026)
 
 Detail berikut tidak disebut dalam perubahan, tetapi dibutuhkan supaya alur baru bisa dibangun. Penomoran melanjutkan sebelas turunan SA di `10_notulen-sinkronisasi-erd-final.md` bagian 6, dan semuanya tercatat juga di `05_erd-draft.md` bagian 7.
 
@@ -60,17 +60,17 @@ Tiga turunan lama gugur karena fiturnya hilang: nomor 2 (`recognized_amount` dan
 | --- | --- | --- |
 | `README.md` | | DEC-25 sampai DEC-27, status keputusan lama yang terdampak, RSK-05 dan RSK-06, struktur folder |
 | `01_stakeholder-register-glossary.md` | v0.3 | Definisi kategori, istilah talangan dan broadcast dihapus, istilah permintaan pesanan dan ruang percakapan ditambah |
-| `02_requirement-master-list.md` | v0.3 | 11 FR DEPRECATED, 7 FR baru, 25 FR direvisi, NFR-PERF-04 baru |
-| `03_use-case-inventory.md` | v0.3 | UC-ORD-01, 02, 02B, 02C, dan 06 DEPRECATED. UC-CHT-02 baru. Skenario UC-ORD-09, UC-ORD-09B, dan UC-CHT-02 |
+| `02_requirement-master-list.md` | v0.3, baseline v1.0 | 11 FR DEPRECATED, 7 FR baru, 25 FR direvisi, NFR-PERF-04 baru. v1.0 (24 Okt): seluruh FR aktif CONFIRMED, kolom test case QA di matriks |
+| `03_use-case-inventory.md` | v0.3, baseline v1.0 | UC-ORD-01, 02, 02B, 02C, dan 06 DEPRECATED. UC-CHT-02 baru. Skenario UC-ORD-09, UC-ORD-09B, dan UC-CHT-02. v1.0 (24 Okt): inventaris layar dan gap dari prototipe Figma final |
 | `04_dual-role-transaction-analysis.md` | v0.3 | Sequence diagram, state machine, tabel pembatalan, invarian, edge case. Bagian talangan dihapus |
-| `05_erd-draft.md` | v0.4 | Tabel `price_adjustments` dihapus, `chat_rooms` dirombak, `order_offers` disederhanakan, kolom talangan dihapus, enum disesuaikan, catatan migrasi untuk Backend |
+| `05_erd-draft.md` | v0.4, baseline v1.0 | Tabel `price_adjustments` dihapus, `chat_rooms` dirombak, `order_offers` disederhanakan, kolom talangan dihapus, enum disesuaikan, catatan migrasi untuk Backend. v1.0 (24 Okt): turunan SA dikonfirmasi, bagian 9 selisih implementasi |
 | `06_api-contract-draft.md` | v0.3 | API-ORD-04D, 06, 07, dan 10 DEPRECATED. API-ORD-13, API-HLP-02, dan API-CHT-01 sampai 04 baru |
 | `07_acceptance-criteria-gherkin.md` | v0.3 | Skenario broadcast dan talangan dihapus, skenario cari helper, chat, dan quote ditambah |
 | `11_skenario-pengguna.md` | v2.0 | Skenario utama diganti Household lewat chat dan quote |
 | `12_class-diagram.md` | v0.2 | `PriceAdjustment`, `BookingType`, `AdjustmentStatus` dihapus, `ChatRoom` dirombak, `ChatService` baru |
 | `13_use-case-dan-activity-diagram.md` | v0.2 | UC-D1, UC-D2, AD-01, AD-02, AD-04, AD-05, AD-07, AD-08 digambar ulang. AD-03 dipensiunkan |
-| SRS Word | v0.3 | Disusun dari file v0.2 yang diedit tim, bukan generate ulang |
-| SDD Word | v0.1 | Draf pertama dari template ASE Lab 2026 |
+| SRS Word | v0.3, lalu v1.0 | v0.3 disusun dari file v0.2 yang diedit tim. v1.0 adalah baseline yang disetujui PIC 24 Oktober 2026: seluruh FR aktif CONFIRMED, tabel antarmuka dari prototipe Figma final, tabel selisih prototipe, referensi dokumen QA |
+| SDD Word | v0.1, lalu v1.0 | v0.1 draf pertama dari template ASE Lab 2026. v1.0 disetujui PIC 24 Oktober 2026: tampilan UI dari Figma per use case, endpoint registrasi dan pendaftaran helper, lingkungan pengujian Render, bab 4 berisi hasil QA dan selisih implementasi |
 | StarUML | `TolonginDong StarUML v0.2.mdj` | Salinan baru dari file tim dengan perubahan class diagram. File lama tidak ditimpa |
 
 ## 5. Dampak ke divisi lain
@@ -78,7 +78,7 @@ Tiga turunan lama gugur karena fiturnya hilang: nomor 2 (`recognized_amount` dan
 | Divisi | Yang perlu dikerjakan |
 | --- | --- |
 | UI/UX (Rafi) | Beranda menampilkan tiga kategori. Tap kategori membuka daftar helper, bukan form pesanan. Halaman detail helper dengan tombol Chat dan Pesan. Ruang chat sebelum pesanan dengan tombol Pesan helper ini dan pemberitahuan pembayaran di luar aplikasi. Layar permintaan masuk dan form quote di sisi helper. Layar hasil quote dan tombol Pilih helper lain di sisi client. Layar daftar tawaran, konfirmasi 60 detik, unggah struk, dan field batas talangan tidak perlu dibuat |
-| Backend (Kai) | Meninjau turunan SA nomor 12 sampai 21 dan tabel migrasi di `05` bagian 8. Kalau migrasi sudah berjalan dari `erd_final.md`, tabel dan kolom yang dihapus perlu migrasi pembalik |
+| Backend (Kai) | Turunan SA nomor 12 sampai 21 sudah dikonfirmasi 24 Oktober 2026. Sisa pekerjaan: menjalankan tabel migrasi di `05` bagian 8 dan menutup selisih di `05` bagian 9 serta SDD v1.0 bagian 4.4 (talangan, `booking_type`, `quote_deadline_at`, alur accept dan reject helper, kategori lama, tipe id) |
 | Mobile (Gede) | Navigasi baru: beranda, daftar helper, detail helper, chat, form, quote. Polling atau real time untuk chat sesuai NFR-PERF-04. Status `searching`, `pending_confirmation`, dan `price_adjustment` tidak perlu dipetakan lagi |
 | QA (Sofia) | Memakai `07` v0.3. Skenario talangan dan broadcast tidak diuji. Data uji minimal butuh dua helper dengan kategori berbeda dan satu helper yang sedang sibuk |
 
@@ -86,7 +86,8 @@ Tiga turunan lama gugur karena fiturnya hilang: nomor 2 (`recognized_amount` dan
 
 | No | Hal | Status |
 | --- | --- | --- |
-| 1 | Konfirmasi Kai atas turunan SA nomor 1, 4 sampai 8, 10, 11, dan nomor 12 sampai 21 | Menunggu |
-| 2 | Angka batas 20 ruang chat baru per hari (FR-CHT-010) | ASUMSI, perlu divalidasi tim |
-| 3 | Prototipe masih menampilkan enam kategori dan belum punya layar chat sebelum pesanan | Menunggu UI/UX |
+| 1 | Konfirmasi Kai atas turunan SA nomor 1, 4 sampai 8, 10, 11, dan nomor 12 sampai 21 | Selesai 24 Oktober 2026 (DEC-28) |
+| 2 | Angka batas 20 ruang chat baru per hari (FR-CHT-010) | Selesai, dikonfirmasi bersama turunan SA 24 Oktober 2026 |
+| 3 | Prototipe Figma final sudah memakai tiga kategori dan chat, tetapi belum memuat layar sisi helper (permintaan masuk dan form quote), tombol Pesan helper ini, layar kedaluwarsa, sengketa, dan panel admin. Subkategori Pindahan di Household dan opsi Bayar di Tempat perlu diselaraskan | Menunggu UI/UX, rincian di `03` bagian 5 |
 | 4 | Tiga hal lama dari notulen `10` bagian 7: mekanisme klaim voucher, nasib voucher pada sengketa, dan selisih Rp1 pada split | Belum dibahas |
+| 5 | Tipe id pengguna dan helper (UUID di implementasi, BIGINT di `05`) serta format nomor pesanan (`ORD-` di implementasi, `TD-` di `05`) | Menunggu keputusan Backend dan SA, lihat `05` bagian 9 |

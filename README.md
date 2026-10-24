@@ -30,7 +30,8 @@ tolongindong-docs/
 ├── 13_use-case-dan-activity-diagram.md       <- 3 use case diagram dan 7 activity diagram aktif, XML draw.io siap tempel
 ├── 14_perubahan-model-marketplace.md         <- perubahan 19 Oktober: tiga kategori, pilih helper langsung, chat sebelum pesanan (DEC-25 sampai DEC-27)
 ├── assets/13/                                <- gambar pratinjau dan file .drawio untuk dokumen 13
-└── assets/sdd/                               <- sumber .mmd dan .dot serta gambar diagram SDD v0.1 (arsitektur, ERD konseptual, tiga sequence diagram)
+├── assets/sdd/                               <- sumber .mmd dan .dot serta gambar diagram SDD (arsitektur, ERD konseptual, tiga sequence diagram)
+└── assets/sdd/ui/                            <- potongan layar prototipe Figma final yang disisipkan di SDD v1.0 bab 2
 ```
 
 Struktur penyimpanan tim di Google Drive:
@@ -44,6 +45,8 @@ Struktur penyimpanan tim di Google Drive:
 /05-QA               test plan, test case, laporan bug
 /99-Archive          versi lama yang sudah tidak dipakai
 ```
+
+Prototipe UI final ada di Figma: [Prototyping in Figma](https://www.figma.com/design/Hk2CkaeEpM8SAmSRvviBvm/Prototyping-in-Figma?node-id=0-1). Inventaris layarnya dan selisihnya terhadap requirement dicatat di `03_use-case-inventory.md` bagian 4 dan 5.
 
 ## 3. Konvensi penamaan
 
@@ -98,12 +101,12 @@ Alur kerja SA sembilan langkah dari materi lab dipetakan ke rencana eksekusi sep
 | 1 | Kick-off dan identifikasi stakeholder | `01_stakeholder-register-glossary.md` | Selesai |
 | 2 | Requirement elicitation | catatan diskusi tim, hasil review prototipe | Selesai |
 | 3 | Analysis dan validation | `04_dual-role-transaction-analysis.md` | Selesai |
-| 4 | Requirement documentation | `02_requirement-master-list.md` v0.3, SRS bab 1 sampai 3 | Master list v0.3 dan SRS v0.3 selesai 19 Okt 2026, menunggu persetujuan Mentor |
+| 4 | Requirement documentation | `02_requirement-master-list.md` v1.0, SRS v1.0 bab 1 sampai 3 | Baseline. SRS v0.2, v0.3, dan v1.0 disetujui PIC 24 Okt 2026, seluruh FR aktif CONFIRMED |
 | 5 | Verifikasi ke stakeholder | `10_notulen-sinkronisasi-erd-final.md`, `14_perubahan-model-marketplace.md` | Selesai 28 Sep 2026, perubahan lingkup final diterima 19 Okt 2026 |
-| 6 | Modelling | `03_use-case-inventory.md`, `05_erd-draft.md` v0.4, `12_class-diagram.md` v0.2, `13_use-case-dan-activity-diagram.md` v0.2 | Seluruh diagram disesuaikan dengan model marketplace 19 Okt 2026 |
-| 7 | Handover ke Design dan Dev | `06_api-contract-draft.md` v0.3, SDD v0.1 bab 1 sampai 4 | SDD v0.1 draf 19 Okt 2026, bab 4 menunggu QA |
-| 8 | Monitoring development | log perubahan requirement dan dampaknya | Berjalan |
-| 9 | Support UAT | `07_acceptance-criteria-gherkin.md` | Menjelang UAT |
+| 6 | Modelling | `03_use-case-inventory.md` v1.0, `05_erd-draft.md` v1.0, `12_class-diagram.md` v0.2, `13_use-case-dan-activity-diagram.md` v0.2 | CONFIRMED 24 Okt 2026 bersama baseline SRS dan SDD v1.0 |
+| 7 | Handover ke Design dan Dev | `06_api-contract-draft.md` v0.3, SDD v1.0 bab 1 sampai 4 | SDD v0.1 dan v1.0 disetujui PIC 24 Okt 2026, bab 4 berisi hasil pengujian QA |
+| 8 | Monitoring development | log perubahan requirement dan dampaknya, `05` bagian 9, SDD v1.0 bagian 4.4 | Berjalan. Selisih implementasi dari hasil QA 24 Okt 2026 sedang ditindaklanjuti BE dan Mobile |
+| 9 | Support UAT | `07_acceptance-criteria-gherkin.md` | Menunggu perbaikan 9 defect High, retesting, dan regression testing QA |
 
 ## 8. Matriks handover antar divisi
 
@@ -148,14 +151,15 @@ Keputusan yang mengubah arah desain dicatat di sini supaya tidak diulang perdeba
 | DEC-25 | Kategori Moving, Food run, dan Laundry dihapus. Kategori yang tersisa Delivery, Personal, dan Household | Disetujui, final tanpa diskusi tim lanjutan | Seluruh model talangan ikut hilang. DEC-17 dan DEC-20 tidak berlaku, DEC-18 bagian Laundry gugur. Rincian di `14_perubahan-model-marketplace.md` | 19 Okt 2026 |
 | DEC-26 | Pemesanan memakai model marketplace: client memilih langsung helper yang relevan dari daftar helper lalu mengirim permintaan pesanan ke helper itu, tanpa broadcast. Harga tetap dari quote helper sesuai DEC-21 | Disetujui, final tanpa diskusi tim lanjutan. Mekanisme harga quote dipilih 19 Okt 2026 | Menggantikan DEC-05. 11 FR DEPRECATED, endpoint dan status broadcast dihapus. Rincian di `14` | 19 Okt 2026 |
 | DEC-27 | Client bisa chat helper sebelum memesan | Disetujui, final tanpa diskusi tim lanjutan | Menggantikan DEC-14 nomor 10. Ruang chat menjadi milik pasangan client dan helper (turunan SA nomor 12) | 19 Okt 2026 |
+| DEC-28 | Seluruh turunan SA yang masih berlaku (nomor 1, 4 sampai 8, 10, 11, dan 12 sampai 21) dikonfirmasi Backend, termasuk batas 20 ruang chat baru per hari. SRS v1.0 dan SDD v1.0 menjadi baseline, seluruh versi sebelumnya disahkan PIC | Disetujui | Dikonfirmasi Kai (BE) dan disetujui Muhammad Gavin Arasyi (PIC). FR aktif di `02` naik ke CONFIRMED, dokumen `02` sampai `07`, `12`, dan `13` berstatus CONFIRMED. Selisih implementasi temuan QA dicatat di `05` bagian 9 | 24 Okt 2026 |
 
 ## 10. Risiko yang sedang dipantau
 
 | ID | Risiko | Dampak | Mitigasi |
 | --- | --- | --- | --- |
 | RSK-01 | Lingkup terlalu besar untuk durasi lab, terutama fitur peta waktu nyata dan dompet | Tinggi | Tetapkan MoSCoW sejak awal, jadikan pelacakan peta sebagai simulasi status, bukan GPS penuh |
-| RSK-02 | Prototipe UI belum punya layar untuk sebagian alur penting seperti pembuatan pesanan dan sengketa, dan sejak 19 Oktober 2026 masih menampilkan enam kategori serta belum punya chat sebelum pesanan | Sedang | Daftar gap sudah disiapkan di `03_use-case-inventory.md` bagian 5 untuk dibahas dengan UI/UX |
+| RSK-02 | Prototipe Figma final sudah memakai tiga kategori dan chat, tetapi belum memuat layar sisi helper, layar kedaluwarsa, sengketa, dan panel admin, serta masih memuat subkategori Pindahan dan opsi Bayar di Tempat | Sedang | Daftar gap per 24 Oktober 2026 di `03_use-case-inventory.md` bagian 5, dan SDD v1.0 menuliskan elemen minimal untuk layar yang belum ada |
 | RSK-03 | Uang sungguhan tidak boleh dipakai di lingkungan lab | Sedang | Dompet berjalan dalam mode simulasi dengan saldo dummy, dinyatakan eksplisit di batasan SRS |
-| RSK-04 | Turunan SA di `05_erd-draft.md` bagian 7 (delapan dari nomor 1 sampai 11 yang masih berlaku, ditambah nomor 12 sampai 21) belum dikonfirmasi BE, dan BE bisa sudah memulai migrasi dari `erd_final.md` atau v0.3 | Sedang | Kai meninjau bagian 7 dan tabel migrasi di bagian 8 sebelum migrasi berikutnya. `erd_final.md` dan v0.3 dianggap digantikan oleh `05_erd-draft.md` v0.4 |
+| RSK-04 | Turunan SA sudah dikonfirmasi 24 Oktober 2026, tetapi hasil QA menunjukkan implementasi masih mengikuti skema sebelum DEC-25 sampai DEC-27 (talangan, `booking_type`, `offer_window_expires_at`, kategori lama), sehingga pesanan Delivery terblokir | Tinggi | BE menjalankan tabel migrasi di `05` bagian 8 dan menutup selisih di `05` bagian 9, lalu QA menjalankan retesting dan regression testing. `erd_final.md` dan v0.3 dianggap digantikan oleh `05_erd-draft.md` v1.0 |
 | RSK-05 | Chat sebelum pesanan membuka peluang client dan helper bertransaksi di luar aplikasi, sehingga platform kehilangan komisi dan client kehilangan perlindungan escrow | Sedang | Nomor telepon tetap tersamar (NFR-SEC-04) dan ruang chat menampilkan pemberitahuan tetap (FR-CHT-009). Deteksi nomor telepon di isi pesan dicatat sebagai pengembangan lanjutan |
 | RSK-06 | Helper dibanjiri chat dari client yang tidak berniat memesan | Rendah | Hanya client yang bisa membuka ruang baru, maksimal 20 per hari (FR-CHT-007, FR-CHT-010). Fitur blokir pengguna dicatat sebagai pengembangan lanjutan |

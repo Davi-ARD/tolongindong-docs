@@ -1,6 +1,6 @@
 # Acceptance Criteria untuk QA
 
-Status dokumen: `REVIEW` v0.3, 19 Oktober 2026, disesuaikan dengan DEC-25 sampai DEC-27 (`14_perubahan-model-marketplace.md`). Ditulis dalam format Given When Then supaya bisa diturunkan langsung menjadi test case. Setiap skenario menyebut kode FR yang diuji agar keterlacakan terjaga.
+Status dokumen: `CONFIRMED` v0.3, 19 Oktober 2026. Naik ke `CONFIRMED` pada 24 Oktober 2026 bersama baseline SRS v1.0 dan SDD v1.0 yang disetujui PIC, setelah seluruh turunan SA dikonfirmasi Backend. QA menurunkan 68 test case FE dari dokumen ini (Test Plan v3.0). Versi ini disesuaikan dengan DEC-25 sampai DEC-27 (`14_perubahan-model-marketplace.md`). Ditulis dalam format Given When Then supaya bisa diturunkan langsung menjadi test case. Setiap skenario menyebut kode FR yang diuji agar keterlacakan terjaga.
 
 Perubahan dari v0.2: skenario broadcast, konfirmasi 60 detik, dan struk talangan dihapus karena FR-nya sudah DEPRECATED. Skenario baru mencakup daftar helper, percakapan sebelum pesanan, dan alur permintaan sampai quote. Angka memakai contoh baku di `05_erd-draft.md` bagian 2.2: Household dengan quote Rp 50.000 dan voucher HEMAT2K Rp 2.000 (minimal pesanan Rp 20.000).
 

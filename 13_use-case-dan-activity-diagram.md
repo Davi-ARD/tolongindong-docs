@@ -1,6 +1,6 @@
 # Use Case Diagram dan Activity Diagram
 
-Status dokumen: `REVIEW` v0.2, 19 Oktober 2026. Tiga use case diagram dan tujuh activity diagram aktif untuk SRS bagian 3.3.1 dan 3.3.2. Isinya diturunkan dari `03_use-case-inventory.md` v0.3, `04_dual-role-transaction-analysis.md` v0.3, `02_requirement-master-list.md` v0.3, dan `11_skenario-pengguna.md` v2.0, serta sudah mengikuti DEC-25 sampai DEC-27.
+Status dokumen: `CONFIRMED` v0.2, 19 Oktober 2026. Naik ke `CONFIRMED` pada 24 Oktober 2026 bersama baseline SRS v1.0 dan SDD v1.0 yang disetujui PIC, setelah seluruh turunan SA dikonfirmasi Backend. Tiga use case diagram dan tujuh activity diagram aktif untuk SRS bagian 3.3.1 dan 3.3.2. Isinya diturunkan dari `03_use-case-inventory.md` v0.3, `04_dual-role-transaction-analysis.md` v0.3, `02_requirement-master-list.md` v0.3, dan `11_skenario-pengguna.md` v2.0, serta sudah mengikuti DEC-25 sampai DEC-27.
 
 Perubahan dari v0.1 (29 September 2026): UC-D1, UC-D2, AD-01, dan AD-02 digambar ulang untuk model marketplace dan chat sebelum pesanan. AD-04, AD-05, AD-07, AD-08, dan AD-06 disesuaikan labelnya karena talangan dan broadcast dihapus. AD-03 (struk talangan) dipensiunkan bersama Food run dan Laundry. Kodenya tidak dipakai ulang, dan gambar `assets/13/AD-03.png` boleh dihapus dari repo. UC-D3 tidak berubah.
 
@@ -222,7 +222,7 @@ Tidak ada masa tunggu setelah penolakan (DEC-14 nomor 7). Satu-satunya penahan a
 
 ## 5. Bagian yang bergantung pada konfirmasi Backend
 
-Beberapa detail di diagram berasal dari turunan SA di `05_erd-draft.md` bagian 7 yang belum dikonfirmasi Kai. Kalau Kai menolak salah satunya, cukup ubah label aksi yang disebut di tabel ini.
+Beberapa detail di diagram berasal dari turunan SA di `05_erd-draft.md` bagian 7. Seluruhnya dikonfirmasi Kai pada 24 Oktober 2026, sehingga tabel ini kini hanya menjadi jejak asal label aksi. Kalau kelak ada turunan yang direvisi, cukup ubah label aksi yang disebut di tabel ini.
 
 | Turunan SA | Diagram dan aksi yang terdampak |
 | --- | --- |

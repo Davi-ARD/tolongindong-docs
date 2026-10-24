@@ -1,6 +1,6 @@
 # Class Diagram
 
-Status dokumen: `REVIEW` v0.2, 19 Oktober 2026. Diagram ini menurunkan `05_erd-draft.md` v0.4 dan aturan di `04_dual-role-transaction-analysis.md` v0.3 menjadi rancangan kelas untuk backend Laravel. Seluruh keputusan sampai DEC-27 sudah tercermin.
+Status dokumen: `CONFIRMED` v0.2, 19 Oktober 2026. Naik ke `CONFIRMED` pada 24 Oktober 2026 bersama baseline SRS v1.0 dan SDD v1.0 yang disetujui PIC, setelah seluruh turunan SA dikonfirmasi Backend. Diagram ini menurunkan `05_erd-draft.md` v0.4 dan aturan di `04_dual-role-transaction-analysis.md` v0.3 menjadi rancangan kelas untuk backend Laravel. Seluruh keputusan sampai DEC-27 sudah tercermin.
 
 Perubahan dari v0.1 mengikuti DEC-25 sampai DEC-27 (`14_perubahan-model-marketplace.md`): kelas `PriceAdjustment` dan `PriceAdjustmentService` serta enumerasi `BookingType` dan `AdjustmentStatus` dihapus, atribut dan method talangan dihapus dari `HelperProfile`, `ServiceCategory`, dan `Order`, `OrderOffer` menjadi quote satu per pesanan, `ChatRoom` berpindah dari milik pesanan menjadi milik pasangan client dan helper, dan `ChatService` ditambahkan. Gambar StarUML yang sesuai versi ini ada di `TolonginDong StarUML v0.2.mdj`.
 

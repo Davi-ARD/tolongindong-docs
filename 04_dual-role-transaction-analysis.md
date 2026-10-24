@@ -1,6 +1,6 @@
 # Analisis Dua Peran dan Validasi Transaksi Dua Arah
 
-Status dokumen: `REVIEW` v0.3, 19 Oktober 2026. Dokumen ini menjawab pertanyaan yang diangkat tim tentang dua peran dan validasi transaksi. Bagian 1 dan 2 tidak berubah sejak v0.1, kecuali satu kalimat soal konflik kepentingan di bagian 2. Bagian 3 sampai 9 direvisi mengikuti DEC-25 sampai DEC-27 di `14_perubahan-model-marketplace.md`: pemesanan model marketplace, chat sebelum pesanan, dan penghapusan talangan. Bagian 6 versi lama tentang talangan diganti bagian baru tentang percakapan sebelum pesanan.
+Status dokumen: `CONFIRMED` v0.3, 19 Oktober 2026. Naik ke `CONFIRMED` pada 24 Oktober 2026 bersama baseline SRS v1.0 dan SDD v1.0 yang disetujui PIC, setelah seluruh turunan SA dikonfirmasi Backend. Dokumen ini menjawab pertanyaan yang diangkat tim tentang dua peran dan validasi transaksi. Bagian 1 dan 2 tidak berubah sejak v0.1, kecuali satu kalimat soal konflik kepentingan di bagian 2. Bagian 3 sampai 9 direvisi mengikuti DEC-25 sampai DEC-27 di `14_perubahan-model-marketplace.md`: pemesanan model marketplace, chat sebelum pesanan, dan penghapusan talangan. Bagian 6 versi lama tentang talangan diganti bagian baru tentang percakapan sebelum pesanan.
 
 ## 1. Rumusan masalah
 
@@ -180,7 +180,7 @@ Aturan yang mengikat:
 2. Client boleh chat helper yang sedang sibuk atau sedang mematikan ketersediaan. Yang dinonaktifkan hanya tombol Pesan (FR-HLP-011).
 3. Pesan yang dikirim saat pasangan itu punya pesanan berstatus `awaiting_quote` sampai `disputed` ditandai dengan `order_id`. Admin membaca pesan bertanda itu saat memutuskan sengketa (FR-ADM-005) **(turunan SA)**.
 4. Nomor telepon tetap tersamar di ruang percakapan (NFR-SEC-04), dan ruang percakapan menampilkan pemberitahuan tetap bahwa pembayaran di luar TD-Wallet tidak dilindungi (FR-CHT-009).
-5. Satu client maksimal membuka 20 ruang baru per hari (FR-CHT-010, ASUMSI).
+5. Satu client maksimal membuka 20 ruang baru per hari (FR-CHT-010).
 6. Pengguna tidak bisa membuka ruang percakapan dengan profil helper miliknya sendiri (INV-05).
 7. Akun yang disuspend tidak bisa membaca atau mengirim pesan. Ruangnya tidak dihapus supaya jejak audit tetap ada.
 

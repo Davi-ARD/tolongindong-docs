@@ -1,6 +1,6 @@
 # Use Case Inventory dan Inventaris Layar
 
-Status dokumen: `REVIEW` v0.3, 19 Oktober 2026. Perubahan v0.3 mengikuti DEC-25 sampai DEC-27 (`14_perubahan-model-marketplace.md`): lima use case dinyatakan DEPRECATED (UC-ORD-01, UC-ORD-02, UC-ORD-02B, UC-ORD-02C, UC-ORD-06), satu use case baru (UC-CHT-02), UC-ORD-09 menjadi satu satunya use case pemesanan, dan use case scenario diganti menjadi UC-CHT-02, UC-ORD-09, dan UC-ORD-09B. Perubahan v0.2 (28 September 2026) mengikuti DEC-21 sampai DEC-23.
+Status dokumen: `CONFIRMED` v1.0, 24 Oktober 2026. Perubahan v1.0: inventaris layar di bagian 4 disusun ulang dari prototipe Figma final dan bagian 5 mendapat status gap per 24 Oktober 2026. SRS v1.0 bagian 3.1.1 menyalin kedua tabel itu. Naik ke `CONFIRMED` pada 24 Oktober 2026 bersama baseline SRS v1.0 dan SDD v1.0 yang disetujui PIC, setelah seluruh turunan SA dikonfirmasi Backend. Perubahan v0.3 mengikuti DEC-25 sampai DEC-27 (`14_perubahan-model-marketplace.md`): lima use case dinyatakan DEPRECATED (UC-ORD-01, UC-ORD-02, UC-ORD-02B, UC-ORD-02C, UC-ORD-06), satu use case baru (UC-CHT-02), UC-ORD-09 menjadi satu satunya use case pemesanan, dan use case scenario diganti menjadi UC-CHT-02, UC-ORD-09, dan UC-ORD-09B. Perubahan v0.2 (28 September 2026) mengikuti DEC-21 sampai DEC-23.
 
 ## 1. Aktor
 
@@ -114,21 +114,27 @@ Catatan untuk SRS: diagram di atas hanya peta ringkas. Versi resmi dengan notasi
 
 ## 4. Inventaris layar dari prototipe
 
-Berikut layar yang terlihat pada video prototipe beserta elemen yang bisa diverifikasi.
+Diperbarui 24 Oktober 2026 dari prototipe Figma final ([Prototyping in Figma](https://www.figma.com/design/Hk2CkaeEpM8SAmSRvviBvm/Prototyping-in-Figma?node-id=0-1)). Inventaris versi video prototipe (11 layar) digantikan tabel ini. Bila prototipe dan requirement berbeda, requirement di `02_requirement-master-list.md` yang menjadi acuan.
 
 | No | Layar | Elemen kunci yang terlihat | Use case terkait |
 | --- | --- | --- | --- |
-| 1 | Onboarding 1 | Judul tentang bantuan kecil sehari hari, indikator halaman, tombol lanjut, tautan lewati | UC-AUTH-01 |
-| 2 | Onboarding 2 | Ikon perisai, pesan bahwa helper terverifikasi | UC-AUTH-01 |
-| 3 | Onboarding 3 | Pesan tentang kebutuhan harian, tombol mulai | UC-AUTH-01 |
-| 4 | Beranda | Lokasi aktif, sapaan nama, lonceng notifikasi berpenanda, kolom pencarian, banner voucher potongan pesanan pertama, enam kategori (sejak 19 Oktober 2026 tinggal tiga), kartu pesanan aktif, navigasi bawah empat tab | UC-HLP-01, UC-ORD-04 |
-| 5 | Cari helper | Judul halaman, chip kategori, jumlah helper terdekat, pengurutan, kartu helper dengan rating, jumlah ulasan, jarak, tarif per jam, dan tag | UC-HLP-01 |
-| 6 | Pelacakan | Label ETA langsung, peta dengan penanda helper dan tujuan, tahapan progres, kartu identitas helper dan kendaraan, nomor pesanan, total biaya, tombol selesai, tombol batalkan, tombol telepon | UC-ORD-04, UC-ORD-05, UC-ORD-07 |
-| 7 | Percakapan | Gelembung pesan dua arah, balasan cepat, kolom ketik, lampiran | UC-CHT-01 |
-| 8 | Daftar percakapan | Daftar lawan bicara, cuplikan pesan, waktu, penanda belum dibaca, termasuk kanal dukungan | UC-CHT-01 |
-| 9 | Profil | Nama, kota, tanggal bergabung, lencana identitas terverifikasi, kartu dompet dengan saldo dan tombol isi saldo serta riwayat, alamat tersimpan, menu jadi helper, voucher, notifikasi | UC-PRF-01, UC-WLT-01, UC-HLP-02 |
-| 10 | Ajakan jadi helper | Pesan penghasilan tambahan sesuai jadwal, tombol lanjut | UC-HLP-02 |
-| 11 | Informasi pembayaran helper | Pencairan mingguan lewat dompet, rentang pendapatan bulanan, tombol ajukan | UC-WLT-03 |
+| 1 | Splash dan Onboarding 1 sampai 3 | Logo, tiga layar pengenalan (Bantuan Mudah untuk Tugas Harian, Aman dengan Helper Terverifikasi, Solusi Tuntas dengan Harga Adil), indikator halaman, tombol Selanjutnya dan Ayo Mulai, tautan Lewati | UC-AUTH-01 |
+| 2 | Daftar Akun | Nama lengkap, email, nomor telepon, kata sandi dengan tombol tampil atau sembunyi, tombol Daftar, tautan Masuk. Pesan galat terpisah untuk email sudah digunakan, nomor telepon sudah digunakan, dan kata sandi minimal 8 karakter | UC-AUTH-01 |
+| 3 | Kode OTP | Nomor tujuan tersamar, enam kotak kode, tombol Verifikasi | UC-AUTH-01 |
+| 4 | Masuk ke Akun | Email dan kata sandi, tautan Lupa Password, tombol Login, pesan galat email atau kata sandi salah, tautan Daftar | UC-AUTH-02, UC-AUTH-03 |
+| 5 | Beranda | Sapaan nama, lokasi aktif, lonceng notifikasi, kolom pencarian, kategori Personal, Delivery, dan Household, pintasan Helper, jasa tersedia, penawaran spesial, navigasi bawah Beranda, Aktifitas, Obrolan, Akun | UC-HLP-01, UC-ORD-04 |
+| 6 | Daftar helper | Judul kategori, kolom pencarian, chip penyaring (subkategori atau rating), kartu helper dengan foto, rating, jumlah ulasan, jarak, tarif, dan tag keahlian | UC-HLP-01 |
+| 7 | Detail helper | Foto, nama, rating, jumlah tugas selesai, ikon percakapan, Tentang, Jasa, Review, harga mulai dari, tombol Tawar Harga | UC-HLP-01, UC-CHT-02 |
+| 8 | Form permintaan pesanan | Alamat asal dan tujuan atau lokasi pengerjaan, rincian kebutuhan per kategori (misalnya estimasi muatan, ukuran rumah, berat pakaian), ketersediaan alat atau armada, waktu pengerjaan Sekarang atau Terjadwal, helper terpilih, catatan tambahan | UC-ORD-09 |
+| 9 | Tawar Harga dan menunggu quote | Input harga estimasi client, keterangan batas 300 detik, layar Menunggu persetujuan Helper dengan sisa waktu | UC-ORD-09 |
+| 10 | Quote dari helper | Harga akhir dari helper, tombol Terima dan Batalkan pesanan | UC-ORD-09 |
+| 11 | Detail pesanan dan pembayaran | Alamat, detail pengerjaan, voucher, rincian harga, total, tombol Pesan Sekarang, layar Pesanan Berhasil Dibuat | UC-ORD-09 |
+| 12 | Aktifitas | Tab Dalam Proses dan Riwayat, kartu pesanan dengan kategori, waktu, nominal, dan status | UC-ORD-04 |
+| 13 | Pesanan berjalan | Alamat, detail pengerjaan, rincian harga, tombol Batal, dialog konfirmasi pekerjaan selesai | UC-ORD-04, UC-ORD-05, UC-ORD-07 |
+| 14 | Beri rating helper | Foto dan nama helper, lima bintang | UC-RTG-01 |
+| 15 | Obrolan | Daftar percakapan dengan pencarian, ruang percakapan dua arah, lampiran berkas, kolom ketik | UC-CHT-01, UC-CHT-02 |
+| 16 | Alamat | Pencarian alamat, tab Terakhir dan Tersimpan, tombol Tambah alamat baru | UC-PRF-01 |
+| 17 | Profil Saya | Foto, nama, email, lencana ID Verified, Edit Profil, Alamat Tersimpan, Keamanan dan Kata Sandi, Daftar Jadi Helper, Voucher Saya, Notifikasi, Pusat Bantuan, Keluar Akun | UC-PRF-01, UC-HLP-02 |
 
 ## 5. Gap analysis prototipe
 
@@ -153,6 +159,18 @@ Satu tambahan baru di luar tujuh poin di atas: layar pelacakan yang sudah ada di
 Tambahan 28 September 2026 dari keputusan sinkronisasi. Layar berikut belum ada di prototipe dan dibutuhkan oleh FR baru: layar quote di sisi helper dan client (FR-ORD-003D), daftar larangan Personal di form pembuatan pesanan (FR-ORD-022), unggah foto penjemputan Delivery (FR-ORD-021), pratinjau rincian pembatalan (FR-ORD-011), serta tiga halaman panel admin untuk suspend akun, pembatalan pesanan, dan manajemen voucher (FR-ADM-009, FR-ADM-011, FR-ADM-012). Label "Lokasi pengerjaan" dipakai pada Personal dan Household. Field batas talangan dan layar unggah struk yang dulu masuk daftar ini tidak perlu dibuat lagi sejak 19 Oktober 2026.
 
 Tambahan 19 Oktober 2026 dari perubahan model pemesanan (DEC-25 sampai DEC-27). Beranda cukup menampilkan tiga kategori, dan tap kategori membuka daftar helper, bukan form pesanan. Layar yang perlu dibuat atau diubah: halaman detail helper dengan tombol Chat dan Pesan serta label sedang sibuk (FR-HLP-010, FR-HLP-011), ruang percakapan sebelum pesanan dengan tombol Pesan helper ini dan pemberitahuan pembayaran di luar aplikasi (FR-CHT-006 sampai FR-CHT-009), form permintaan pesanan dengan helper sudah terisi (FR-ORD-001), layar menunggu quote dengan hitung mundur, layar quote dengan tombol Setuju dan Bayar, layar permintaan masuk dan form quote di sisi helper, serta layar kedaluwarsa dengan tombol Pilih helper lain (FR-ORD-003D, FR-ORD-024). Layar daftar tawaran broadcast dan layar konfirmasi 60 detik tidak perlu dibuat.
+
+**Status per 24 Oktober 2026 (prototipe Figma final)**: alur akun, beranda tiga kategori, daftar dan detail helper, form permintaan, tawar harga dan quote di sisi client, aktifitas, konfirmasi selesai, rating, obrolan, alamat, dan profil sudah tergambar. Selisih yang masih ada dicatat di tabel berikut untuk ditindaklanjuti UI/UX dan Mobile. Tambahan bertanggal di atas tetap disimpan sebagai jejak.
+
+| No | Area | Selisih terhadap requirement | Acuan |
+| --- | --- | --- | --- |
+| 1 | Detail helper | Tombol Pesan tampil sebagai Tawar Harga dan tombol Chat sebagai ikon percakapan di kepala halaman. Label sedang sibuk belum digambar | FR-HLP-010, FR-HLP-011 |
+| 2 | Sisi Helper | Layar permintaan masuk, form quote dengan rincian komisi dan upah bersih, serta tombol tolak dengan alasan belum ada | FR-ORD-003D, FR-ORD-006 |
+| 3 | Ruang percakapan | Tombol Pesan helper ini dan pemberitahuan tetap soal pembayaran di luar TD-Wallet belum ada | FR-CHT-008, FR-CHT-009 |
+| 4 | Metode pembayaran | Prototipe menampilkan e-wallet, transfer bank, dan Bayar di Tempat. Dana pesanan selalu ditahan dari saldo TD-Wallet saat quote disetujui, sehingga pilihan itu tidak menjadi metode pembayaran pesanan | FR-WLT-002, FR-WLT-006 |
+| 5 | Subkategori Household | Prototipe memuat subkategori Pindahan, Rumah, Kamar, dan Pakaian. Pindahan beririsan dengan kategori Moving yang sudah dihapus dan perlu diselaraskan | DEC-25, definisi Household |
+| 6 | Dompet dan pelacakan | Kartu saldo TD-Wallet dengan tombol isi saldo dan riwayat belum ada di Profil Saya. Halaman pelacakan dengan tahapan progres dan layar penarikan pendapatan helper belum digambar | FR-WLT-001, 005, 007, FR-ORD-008, 009 |
+| 7 | Layar lain | Kedaluwarsa dengan tombol Pilih helper lain, pratinjau biaya pembatalan, form sengketa Delivery, daftar larangan Personal, pilih kategori dan unggah KTP serta swafoto, kolom ulasan pada rating, dan panel admin belum digambar | FR-ORD-003D, 011, 018, 022, FR-VER-002, FR-RTG-001, FR-ADM |
 
 ## 6. Templat use case scenario
 

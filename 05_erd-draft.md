@@ -1,6 +1,6 @@
 # ERD dan Catatan Skema
 
-Status dokumen: `REVIEW` v0.4, 19 Oktober 2026. Versi ini menerapkan DEC-25 sampai DEC-27 (`14_perubahan-model-marketplace.md`) di atas v0.3. Tabel dan kolom yang berasal langsung dari keputusan berstatus final. Turunan SA yang belum dikonfirmasi Kai ditandai **(turunan SA)** dan dirangkum di bagian 7. Daftar perubahan skema untuk migrasi ada di bagian 8.
+Status dokumen: `CONFIRMED` v1.0, 24 Oktober 2026. Perubahan v1.0: seluruh turunan SA di bagian 7 dikonfirmasi Kai pada 24 Oktober 2026 (DEC-28), penanda **(turunan SA)** di badan dokumen dipertahankan sebagai jejak asal kolom, dan bagian 9 mencatat selisih implementasi yang ditemukan QA. Isi skema tidak berubah dari v0.4. Versi 0.4 (19 Oktober 2026) menerapkan DEC-25 sampai DEC-27 (`14_perubahan-model-marketplace.md`) di atas v0.3. Tabel dan kolom yang berasal langsung dari keputusan berstatus final. Turunan SA yang saat itu belum dikonfirmasi Kai ditandai **(turunan SA)** dan dirangkum di bagian 7. Daftar perubahan skema untuk migrasi ada di bagian 8.
 
 Riwayat singkat: v0.1 draf SA, v0.2 perbaikan mekanis hasil review Kai 6 September 2026, v0.3 penggabungan ERD final dan keputusan sinkronisasi 28 September 2026, v0.4 model pemesanan marketplace dan penghapusan talangan 19 Oktober 2026. Rincian v0.3 yang sudah tidak berlaku (tabel `PRICE_ADJUSTMENT`, kolom talangan, `booking_type`) hanya tersisa di riwayat git.
 
@@ -518,33 +518,33 @@ Kolom `is_admin` pada `user` menandai akun admin. Akun admin dibuat lewat seeder
 
 `ADMIN_ACTION_LOG` mencatat setiap tindakan admin dalam satu tempat. `target_entity` berisi nama tabel yang kena aksi, `target_id` berisi id barisnya.
 
-## 7. Turunan SA yang menunggu konfirmasi Kai
+## 7. Turunan SA (dikonfirmasi Kai 24 Oktober 2026)
 
 Nomor 1 sampai 11 berasal dari `10_notulen-sinkronisasi-erd-final.md` bagian 6. Nomor 12 sampai 21 berasal dari `14_perubahan-model-marketplace.md` bagian 3, lengkap dengan alasannya.
 
-| No | Turunan | Lokasi | Status per 19 Okt 2026 |
+| No | Turunan | Lokasi | Status per 24 Okt 2026 |
 | --- | --- | --- | --- |
-| 1 | `orders.client_estimated_price` terpisah dari komponen rentang acuan | Bagian 2.1 | Menunggu |
+| 1 | `orders.client_estimated_price` terpisah dari komponen rentang acuan | Bagian 2.1 | Dikonfirmasi |
 | 2 | `price_adjustments.recognized_amount` dan `additional_hold_amount` | | Gugur, tabel dihapus (DEC-25) |
 | 3 | `transaction_type` `advance_reimbursement` | | Gugur (DEC-25) |
-| 4 | Status `partially_refunded` | Bagian 4 | Menunggu |
-| 5 | `disputes.client_refund_amount` dan `helper_release_amount` | Bagian 1 | Menunggu |
-| 6 | Voucher kembali pada pembatalan oleh helper dan admin cancel | `04` bagian 5 | Menunggu |
-| 7 | Kompensasi pembatalan maksimal `service_client_charge` | `04` bagian 5 | Menunggu |
-| 8 | Split: `helper_release = floor(held_amount / 2)` | Bagian 2.2 | Menunggu |
+| 4 | Status `partially_refunded` | Bagian 4 | Dikonfirmasi |
+| 5 | `disputes.client_refund_amount` dan `helper_release_amount` | Bagian 1 | Dikonfirmasi |
+| 6 | Voucher kembali pada pembatalan oleh helper dan admin cancel | `04` bagian 5 | Dikonfirmasi |
+| 7 | Kompensasi pembatalan maksimal `service_client_charge` | `04` bagian 5 | Dikonfirmasi |
+| 8 | Split: `helper_release = floor(held_amount / 2)` | Bagian 2.2 | Dikonfirmasi |
 | 9 | Tombol Pesan Langsung nonaktif karena batas talangan | | Gugur (DEC-25) |
-| 10 | `service_category.requires_pickup_photo` dan `is_dispute_eligible` | Bagian 2.5 dan 3 | Menunggu |
-| 11 | `orders.helper_finished_at`, `cancellation_fee`, `vouchers.is_active`, `created_at` pada `disputes` dan `verification_requests` | Bagian 1 | Menunggu. Bagian `offer_window_expires_at` diganti nomor 18, unique `(order_id, helper_id)` diganti nomor 17 |
-| 12 | `chat_rooms` per pasangan client dan helper | Bagian 2.4 | Baru, menunggu |
-| 13 | Hanya client yang membuka ruang chat baru | Bagian 2.4, 5.3 | Baru, menunggu |
-| 14 | `chat_messages.order_id` terisi otomatis | Bagian 2.4 | Baru, menunggu |
-| 15 | Pemberitahuan pembayaran di luar aplikasi dan batas 20 ruang chat per hari | Bagian 5.3, FR-CHT-009, FR-CHT-010 | Baru, menunggu |
-| 16 | `orders.helper_id` terisi sejak pesanan dibuat, `booking_type` dihapus | Bagian 2.5 | Baru, menunggu |
-| 17 | `order_offers` maksimal satu baris per pesanan, kolom dan nilai enum broadcast dihapus | Bagian 2.3 | Baru, menunggu |
-| 18 | `offer_window_expires_at` menjadi `quote_deadline_at` | Bagian 2.5 | Baru, menunggu |
-| 19 | Permintaan lain ke helper otomatis `expired` saat helper `accepted` | Bagian 5.3, FR-ORD-024 | Baru, menunggu |
-| 20 | Pesanan `expired` dikirim ulang ke helper lain sebagai pesanan baru | `06` API-ORD-13 | Baru, menunggu |
-| 21 | Larangan Personal soal belanja atas nama client | FR-ORD-022 | Baru, menunggu |
+| 10 | `service_category.requires_pickup_photo` dan `is_dispute_eligible` | Bagian 2.5 dan 3 | Dikonfirmasi |
+| 11 | `orders.helper_finished_at`, `cancellation_fee`, `vouchers.is_active`, `created_at` pada `disputes` dan `verification_requests` | Bagian 1 | Dikonfirmasi. Bagian `offer_window_expires_at` diganti nomor 18, unique `(order_id, helper_id)` diganti nomor 17 |
+| 12 | `chat_rooms` per pasangan client dan helper | Bagian 2.4 | Dikonfirmasi |
+| 13 | Hanya client yang membuka ruang chat baru | Bagian 2.4, 5.3 | Dikonfirmasi |
+| 14 | `chat_messages.order_id` terisi otomatis | Bagian 2.4 | Dikonfirmasi |
+| 15 | Pemberitahuan pembayaran di luar aplikasi dan batas 20 ruang chat per hari | Bagian 5.3, FR-CHT-009, FR-CHT-010 | Dikonfirmasi |
+| 16 | `orders.helper_id` terisi sejak pesanan dibuat, `booking_type` dihapus | Bagian 2.5 | Dikonfirmasi |
+| 17 | `order_offers` maksimal satu baris per pesanan, kolom dan nilai enum broadcast dihapus | Bagian 2.3 | Dikonfirmasi |
+| 18 | `offer_window_expires_at` menjadi `quote_deadline_at` | Bagian 2.5 | Dikonfirmasi |
+| 19 | Permintaan lain ke helper otomatis `expired` saat helper `accepted` | Bagian 5.3, FR-ORD-024 | Dikonfirmasi |
+| 20 | Pesanan `expired` dikirim ulang ke helper lain sebagai pesanan baru | `06` API-ORD-13 | Dikonfirmasi |
+| 21 | Larangan Personal soal belanja atas nama client | FR-ORD-022 | Dikonfirmasi |
 
 ## 8. Perubahan skema v0.3 ke v0.4 untuk migrasi
 
@@ -570,3 +570,9 @@ Kalau Backend sudah membuat migrasi dari v0.3 atau dari `erd_final.md`, daftar i
 | Enum `offer_status` | `selected`, `not_selected`, `declined` dihapus |
 | Enum `attachment_type` | `receipt` dihapus |
 | Enum `transaction_type` | `advance_reimbursement` dihapus |
+
+## 9. Selisih implementasi temuan QA (24 Oktober 2026)
+
+Pengujian QA terhadap build dan API di lingkungan Render menunjukkan sebagian implementasi masih mengikuti skema sebelum v0.4. Rinciannya beserta ID test case dan defect ada di SDD v1.0 bagian 4.4. Ringkasnya, perubahan berikut dari bagian 8 belum tercermin di implementasi yang diuji: kolom dan validasi talangan (`advance_limit`, `max_advance_limit`), `orders.booking_type`, penggantian nama `offer_window_expires_at` menjadi `quote_deadline_at`, dan pembatasan kategori aktif pada pivot kategori helper (`food_run` dan `moving` masih bisa dipilih).
+
+Satu selisih belum punya keputusan. Implementasi memakai UUID untuk id pengguna dan helper serta nomor pesanan berpola `ORD-`, sedangkan bagian 1 memakai `BIGINT` auto increment dan contoh nomor pesanan `TD-2942`. Kai dan SA perlu memutuskan apakah bagian 1 diperbarui mengikuti implementasi atau implementasi dimigrasi, lalu mencatatnya di decision log `README.md`.

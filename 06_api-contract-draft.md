@@ -1,6 +1,6 @@
 # API Contract Draft
 
-Status dokumen: `REVIEW` v0.3, 19 Oktober 2026. Cakupan versi ini adalah pencarian helper, percakapan, alur inti pesanan, dompet, dan panel admin. Modul autentikasi, notifikasi, dan verifikasi menyusul.
+Status dokumen: `CONFIRMED` v0.3, 19 Oktober 2026. Naik ke `CONFIRMED` pada 24 Oktober 2026 bersama baseline SRS v1.0 dan SDD v1.0 yang disetujui PIC, setelah seluruh turunan SA dikonfirmasi Backend. Cakupan versi ini adalah pencarian helper, percakapan, alur inti pesanan, dompet, dan panel admin. Modul autentikasi, notifikasi, dan verifikasi tidak dirinci di sini. Endpoint yang dipakai Backend untuk modul itu (`POST /register`, `POST /verify-otp`, `POST /login`, `POST /logout`, `GET /me`, `POST /helper/register`, `GET /helper/status`) tercatat di dokumentasi API Backend (Google Drive `/03-BE`) dan dirujuk SDD v1.0.
 
 Perubahan dari v0.2 mengikuti DEC-25 sampai DEC-27 di `14_perubahan-model-marketplace.md`:
 - Empat endpoint dinyatakan DEPRECATED: API-ORD-04D (konfirmasi broadcast), API-ORD-06 dan API-ORD-07 (struk talangan), API-ORD-10 (siarkan ulang). Nomornya tidak dipakai ulang.

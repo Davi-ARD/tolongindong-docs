@@ -270,8 +270,8 @@ Saat menerapkan keputusan ke ERD dan API, SA menambahkan beberapa detail yang ti
 | 1 | Memperbarui repo (`README`, `01`, `02`, `03`, `04`, `05`, `06`, `07`) sesuai keputusan | SA | Selesai 28 Sep 2026, menunggu commit |
 | 2 | Menggabungkan `erd_final.md` ke `05_erd-draft.md` v0.3 dengan seluruh koreksi T-01 sampai T-04 | SA | Selesai 28 Sep 2026 |
 | 3 | Menulis ulang `scenario.md` mengikuti Opsi A menjadi `11_skenario-pengguna.md` | SA | Selesai 28 Sep 2026 |
-| 4 | Mengonfirmasi sebelas turunan SA di bagian 6 | Kai (BE) | Menunggu |
-| 5 | Menggambar layar quote direct booking, manajemen voucher, larangan Personal, unggah foto penjemputan, dan label lokasi pengerjaan | Rafi (UI/UX) | Menunggu |
+| 4 | Mengonfirmasi sebelas turunan SA di bagian 6 | Kai (BE) | Selesai 24 Okt 2026 (DEC-28). Nomor 2, 3, dan 9 gugur lebih dulu lewat DEC-25 |
+| 5 | Menggambar layar quote direct booking, manajemen voucher, larangan Personal, unggah foto penjemputan, dan label lokasi pengerjaan | Rafi (UI/UX) | Sebagian. Quote sisi client sudah ada di prototipe Figma final, sisanya tercatat di `03` bagian 5 status 24 Okt 2026 |
 | 6 | Menyusun class diagram `12_class-diagram.md` | SA | Selesai 28 Sep 2026 |
-| 7 | Menggambar use case diagram dan activity diagram versi UML untuk SRS | SA | Berikutnya |
-| 8 | Menyusun SRS v0.3 dan mengajukannya untuk persetujuan Mentor | SA | Berikutnya |
+| 7 | Menggambar use case diagram dan activity diagram versi UML untuk SRS | SA | Selesai 19 Okt 2026 (`13`) |
+| 8 | Menyusun SRS v0.3 dan mengajukannya untuk persetujuan Mentor | SA | Selesai. SRS v1.0 disetujui 24 Okt 2026 |
